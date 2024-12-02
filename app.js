@@ -20,6 +20,9 @@ class InfluencerGame {
         this.referrals = [];
         this.stars = 0;
 
+        // Добавляем обработчики платежей
+        this.telegram.onEvent('invoiceClosed', this.handleInvoiceClosed.bind(this));
+
         this.init();
     }
 
@@ -43,36 +46,41 @@ class InfluencerGame {
 
             if (!userDoc.exists) {
                 console.log('New user, requesting entry payment');
-                // Запрашиваем входной платеж
-                const invoice = {
-                    title: "Вход в игру Influencer",
-                    description: "Единоразовый взнос для начала игры",
-                    currency: "XTR",
-                    prices: [{label: "Вход", amount: 50}],
-                    payload: "entry_payment"
-                };
-
-                try {
-                    await this.telegram.showPaymentForm(invoice);
-                    // После успешной оплаты создаем пользователя
-                    const userData = {
-                        id: tgUser.id,
-                        username: tgUser.username,
-                        first_name: tgUser.first_name,
-                        points: 0,
-                        stars: 0,
-                        referrals: [],
-                        created_at: firebase.firestore.FieldValue.serverTimestamp(),
-                        last_bonus: null,
-                        has_paid_entry: true
+                // Запрашиваем входной платеж через MainButton
+                this.telegram.MainButton.setText('Оплатить вход (50 Stars)');
+                this.telegram.MainButton.show();
+                this.telegram.MainButton.onClick(() => {
+                    const invoice = {
+                        title: "Вход в игру Influencer",
+                        description: "Единоразовый взнос для начала игры",
+                        currency: "XTR",
+                        prices: [{label: "Вход", amount: 50}],
+                        payload: "entry_payment"
                     };
-                    await this.db.collection('users').doc(String(tgUser.id)).set(userData);
-                    this.currentUser = userData;
-                } catch (error) {
-                    console.error('Entry payment error:', error);
-                    alert('Для начала игры необходимо оплатить вход');
-                    return;
-                }
+
+                    this.telegram.showPaymentForm(invoice)
+                        .then(async () => {
+                            // После успешной оплаты создаем пользователя
+                            const userData = {
+                                id: tgUser.id,
+                                username: tgUser.username,
+                                first_name: tgUser.first_name,
+                                points: 0,
+                                stars: 0,
+                                referrals: [],
+                                created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                                last_bonus: null,
+                                has_paid_entry: true
+                            };
+                            await this.db.collection('users').doc(String(tgUser.id)).set(userData);
+                            this.currentUser = userData;
+                            this.telegram.MainButton.hide();
+                        })
+                        .catch((error) => {
+                            console.error('Entry payment error:', error);
+                            alert('Для начала игры необходимо оплатить вход');
+                        });
+                });
             } else {
                 this.currentUser = userDoc.data();
                 this.points = this.currentUser.points;
@@ -133,13 +141,15 @@ class InfluencerGame {
 
     showFriendsPage() {
         const content = document.getElementById('content');
+        const referralCode = this.currentUser?.id ? `ref_${this.currentUser.id}` : '';
+
         content.innerHTML = `
             <div class="friends-section">
                 <h2>Пригласите друзей</h2>
                 <p>За каждого приглашенного друга вы получите 10 influencer!</p>
                 <div class="referral-link">
                     <p>Ваша реферальная ссылка:</p>
-                    <input type="text" readonly value="https://t.me/influenc_bot?start=${this.currentUser?.id || ''}" />
+                    <input type="text" readonly value="https://t.me/influenc_bot?start=${referralCode}" />
                     <button onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">
                         Копировать
                     </button>
@@ -185,6 +195,42 @@ class InfluencerGame {
         `;
     }
 
+    async handleInvoiceClosed(event) {
+        console.log('Invoice closed:', event);
+        if (event.status === 'paid') {
+            const payload = JSON.parse(event.payload);
+            if (payload === 'entry_payment') {
+                // Обработка входного платежа
+                const userData = {
+                    id: this.telegram.initDataUnsafe.user.id,
+                    username: this.telegram.initDataUnsafe.user.username,
+                    first_name: this.telegram.initDataUnsafe.user.first_name,
+                    points: 0,
+                    stars: 50, // Начальные звезды после оплаты входа
+                    referrals: [],
+                    created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    last_bonus: null,
+                    has_paid_entry: true
+                };
+                await this.db.collection('users').doc(String(this.telegram.initDataUnsafe.user.id)).set(userData);
+                this.currentUser = userData;
+                this.stars = userData.stars;
+                this.telegram.MainButton.hide();
+                this.showPage('rating');
+            } else if (payload === 'stars_purchase') {
+                // Обработка покупки дополнительных звезд
+                const amount = event.total_amount;
+                this.stars += amount;
+                this.points += amount;
+                await this.db.collection('users').doc(String(this.currentUser.id)).update({
+                    stars: this.stars,
+                    points: this.points
+                });
+                this.updateUI();
+            }
+        }
+    }
+
     async handlePayment() {
         try {
             const amount = parseInt(prompt('Введите количество Stars для покупки:'));
@@ -195,13 +241,23 @@ class InfluencerGame {
                 description: `Покупка ${amount} Telegram Stars`,
                 currency: "XTR",
                 prices: [{label: "Stars", amount: amount}],
-                payload: "stars_purchase"
+                payload: JSON.stringify('stars_purchase')
             };
 
             await this.telegram.showPaymentForm(invoice);
         } catch (error) {
             console.error('Payment error:', error);
             alert('Ошибка при создании платежа');
+        }
+    }
+
+    updateUI() {
+        const userStats = document.querySelector('.user-stats');
+        if (userStats) {
+            userStats.innerHTML = `
+                <h2>Ваш счет: ${this.points} influencer</h2>
+                <p>Звезды: ${this.stars} ⭐️</p>
+            `;
         }
     }
 }

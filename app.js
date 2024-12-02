@@ -131,7 +131,9 @@ class InfluencerGame {
     showFriendsPage() {
         const content = document.getElementById('content');
         const botUsername = 'influenc_bot';
-        const referralLink = `https://t.me/${botUsername}/start?start_param=ref_${this.currentUser?.id}`;
+        const referralLink = this.currentUser && this.currentUser.id ?
+            `https://t.me/${botUsername}/start?start_param=ref_${this.currentUser.id}` :
+            'Сначала войдите в игру';
 
         content.innerHTML = `
             <div class="friends-section">
@@ -139,10 +141,12 @@ class InfluencerGame {
                 <p>За каждого приглашенного друга вы получите 10 influencer!</p>
                 <div class="referral-link">
                     <p>Ваша реферальная ссылка:</p>
-                    <input type="text" readonly value="${referralLink}" />
-                    <button onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">
-                        Копировать
-                    </button>
+                    ${this.currentUser && this.currentUser.id ? `
+                        <input type="text" readonly value="${referralLink}" />
+                        <button onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">
+                            Копировать
+                        </button>
+                    ` : '<p>Реферальная ссылка будет доступна после входа в игру</p>'}
                 </div>
                 <div class="referrals-list">
                     <h3>Ваши рефералы:</h3>
@@ -287,7 +291,7 @@ class InfluencerGame {
             await this.telegram.showPaymentForm(invoice);
         } catch (error) {
             console.error('Payment error:', error);
-            alert('Ошибк�� при создании платежа');
+            alert('Ошибк при создании платежа');
         }
     }
 

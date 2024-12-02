@@ -46,41 +46,21 @@ class InfluencerGame {
 
             if (!userDoc.exists) {
                 console.log('New user, requesting entry payment');
-                // Запрашиваем входной платеж через MainButton
-                this.telegram.MainButton.setText('Оплатить вход (50 Stars)');
-                this.telegram.MainButton.show();
-                this.telegram.MainButton.onClick(() => {
-                    const invoice = {
-                        title: "Вход в игру Influencer",
-                        description: "Единоразовый взнос для начала игры",
-                        currency: "XTR",
-                        prices: [{label: "Вход", amount: 50}],
-                        payload: "entry_payment"
-                    };
+                // Сразу показываем форму оплаты
+                const invoice = {
+                    title: "Вход в игру Influencer",
+                    description: "Единоразовый взнос для начала игры",
+                    currency: "XTR",
+                    prices: [{label: "Вход", amount: 50}],
+                    payload: JSON.stringify('entry_payment')
+                };
 
-                    this.telegram.showPaymentForm(invoice)
-                        .then(async () => {
-                            // После успешной оплаты создаем пользователя
-                            const userData = {
-                                id: tgUser.id,
-                                username: tgUser.username,
-                                first_name: tgUser.first_name,
-                                points: 0,
-                                stars: 0,
-                                referrals: [],
-                                created_at: firebase.firestore.FieldValue.serverTimestamp(),
-                                last_bonus: null,
-                                has_paid_entry: true
-                            };
-                            await this.db.collection('users').doc(String(tgUser.id)).set(userData);
-                            this.currentUser = userData;
-                            this.telegram.MainButton.hide();
-                        })
-                        .catch((error) => {
-                            console.error('Entry payment error:', error);
-                            alert('Для начала игры необходимо оплатить вход');
-                        });
-                });
+                try {
+                    await this.telegram.showPaymentForm(invoice);
+                } catch (error) {
+                    console.error('Entry payment error:', error);
+                    alert('Для начала игры необходимо оплатить вход');
+                }
             } else {
                 this.currentUser = userDoc.data();
                 this.points = this.currentUser.points;

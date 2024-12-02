@@ -155,22 +155,57 @@ class InfluencerGame {
         content.innerHTML = `
             <div class="about-section">
                 <h2>Об игре Influencer</h2>
+
+                <div class="game-intro">
+                    <p>Добро пожаловать в игру Influencer - место, где ваше влияние превращается в реальную ценность!</p>
+                </div>
+
                 <div class="game-rules">
                     <h3>Как играть:</h3>
                     <ul>
-                        <li>Входной взнос: 50 Telegram Stars</li>
-                        <li>Ежедневный бонус: 10 influencer</li>
-                        <li>За каждого реферала: 10 influencer</li>
-                        <li>1 Telegram Star = 1 influencer</li>
+                        <li>🌟 Входной взнос: 50 Telegram Stars</li>
+                        <li>⏰ Ежедневный бонус: 10 influencer</li>
+                        <li>👥 За каждого реферала: 10 influencer</li>
+                        <li>💫 1 Telegram Star = 1 influencer</li>
+                        <li>📈 Чем больше друзей пригласите, тем выше ваш рейтинг</li>
                     </ul>
                 </div>
-                <div class="season-info">
-                    <h3>О сезоне</h3>
-                    <p>После окончания сезона все участники получат токены influencer пропорционально набранным очкам!</p>
+
+                <div class="earning-ways">
+                    <h3>Способы заработка influencer:</h3>
+                    <ul>
+                        <li>✨ Покупайте Telegram Stars</li>
+                        <li>🤝 Приглашайте друзей</li>
+                        <li>📅 Получайте ежедневные бонусы</li>
+                        <li>🏆 Участвуйте в рейтинге</li>
+                    </ul>
                 </div>
-                <button class="buy-stars-btn" onclick="game.handlePayment()">
-                    Купить Stars
-                </button>
+
+                <div class="season-info">
+                    <h3>О текущем сезоне</h3>
+                    <p>🎮 Сезон 1 продлится до 31 января 2024</p>
+                    <p>💎 После окончания сезона все участники получат токены influencer пропорционально набранным очкам!</p>
+                    <p>🔥 Топ-10 игроков получат специальные награды</p>
+                </div>
+
+                <div class="token-info">
+                    <h3>О токене Influencer</h3>
+                    <p>🪙 Токен Influencer - это ваша награда за активность в игре</p>
+                    <p>📊 Распределение токенов после сезона:</p>
+                    <ul>
+                        <li>70% - пропорционально набранным очкам</li>
+                        <li>20% - топ-10 игроков</li>
+                        <li>10% - случайные награды активным игрокам</li>
+                    </ul>
+                </div>
+
+                <div class="buy-stars-section">
+                    <h3>Купить Stars</h3>
+                    <p>💫 Моментально получайте influencer очки за каждую звезду!</p>
+                    <button class="buy-stars-btn" onclick="game.handlePayment()">
+                        Купить Stars
+                    </button>
+                </div>
             </div>
         `;
     }

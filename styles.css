@@ -141,3 +141,60 @@ body {
     background: rgba(64, 167, 227, 0.1);
     border-radius: 8px;
 }
+
+.about-section {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.game-intro {
+    font-size: 1.1em;
+    line-height: 1.6;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(64, 167, 227, 0.1);
+    border-radius: 8px;
+}
+
+.game-rules, .earning-ways, .season-info, .token-info {
+    margin: 25px 0;
+    padding: 20px;
+    background: var(--tg-theme-bg-color);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.about-section h3 {
+    color: var(--tg-theme-button-color);
+    margin-bottom: 15px;
+}
+
+.about-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.about-section li {
+    margin: 12px 0;
+    padding-left: 25px;
+    position: relative;
+}
+
+.buy-stars-section {
+    text-align: center;
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(64, 167, 227, 0.1);
+    border-radius: 12px;
+}
+
+.token-info ul {
+    margin-left: 20px;
+    margin-top: 10px;
+}
+
+.token-info li {
+    font-size: 0.9em;
+    color: var(--tg-theme-text-color);
+    opacity: 0.8;
+}

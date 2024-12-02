@@ -484,47 +484,18 @@ body {
 }
 
 .entry-card {
-    background: white;
+    background: var(--card-bg);
     padding: 30px;
     border-radius: 16px;
     box-shadow: var(--card-shadow);
     max-width: 400px;
     width: 100%;
     text-align: center;
-}
-
-.entry-card h2 {
-    color: var(--primary-color);
-    margin-bottom: 20px;
-    font-size: 1.8em;
-}
-
-.entry-info {
-    margin: 20px 0;
-}
-
-.entry-amount {
-    font-size: 2.5em;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin: 15px 0;
-}
-
-.entry-benefits {
-    list-style: none;
-    padding: 0;
-    margin: 20px 0;
-    text-align: left;
-}
-
-.entry-benefits li {
-    margin: 10px 0;
-    padding-left: 25px;
-    position: relative;
+    color: var(--text-color);
 }
 
 .entry-button {
-    background: var(--primary-color);
+    background: var(--primary-gradient);
     color: white;
     border: none;
     padding: 15px 30px;
@@ -532,10 +503,24 @@ body {
     font-size: 1.2em;
     cursor: pointer;
     width: 100%;
-    transition: all 0.3s ease;
+    margin-top: 20px;
+    transition: transform 0.2s ease;
 }
 
-.entry-button:hover {
-    background: darker(var(--primary-color), 10%);
-    transform: translateY(-2px);
+.entry-button:active {
+    transform: scale(0.98);
+}
+
+.entry-amount {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin: 15px 0;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }

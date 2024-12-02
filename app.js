@@ -21,13 +21,17 @@ class InfluencerGame {
         document.documentElement.style.setProperty('--text-color', this.telegram.themeParams.text_color || '#FFFFFF');
         document.documentElement.style.setProperty('--card-bg', this.telegram.themeParams.secondary_bg_color || '#242529');
 
+        // Расширяем приложение на весь экран
+        this.telegram.expand();
+        this.telegram.requestFullscreen();
+
+        // Скрываем навигацию по умолчанию
+        document.querySelector('.navigation').style.display = 'none';
+
         this.db = firebase.firestore();
         this.points = 0;
         this.referrals = [];
         this.stars = 0;
-
-        // Расширяем приложение на весь экран
-        this.telegram.expand();
 
         // Добавляем обработчики платежей
         this.telegram.onEvent('invoiceClosed', this.handleInvoiceClosed.bind(this));
@@ -252,7 +256,7 @@ class InfluencerGame {
                         </ul>
                     </div>
                     <button class="entry-button" onclick="game.requestEntryPayment()">
-                        Оплатить вход
+                        Оплатить 50 Stars
                     </button>
                 </div>
             </div>
@@ -300,6 +304,9 @@ class InfluencerGame {
                 await this.db.collection('users').doc(String(this.telegram.initDataUnsafe.user.id)).set(userData);
                 this.currentUser = userData;
                 this.stars = userData.stars;
+
+                // Показываем навигацию после успешной оплаты
+                document.querySelector('.navigation').style.display = 'flex';
                 await this.showPage('rating');
             }
         }

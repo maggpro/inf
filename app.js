@@ -139,10 +139,22 @@ class InfluencerGame {
                 <p>За каждого приглашенного друга вы получите 10 influencer!</p>
                 <div class="referral-link">
                     <p>Ваша реферальная ссылка:</p>
-                    <input type="text" readonly value="https://t.me/influenc_bot?start=ref" />
+                    <input type="text" readonly value="https://t.me/influenc_bot?start=${this.currentUser?.id || ''}" />
                     <button onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">
                         Копировать
                     </button>
+                </div>
+                <div class="referrals-list">
+                    <h3>Ваши рефералы:</h3>
+                    ${this.referrals.length ?
+                        this.referrals.map(ref => `
+                            <div class="referral-item">
+                                <span class="username">${ref.username || 'Аноним'}</span>
+                                <span class="points">${ref.points || 0} points</span>
+                            </div>
+                        `).join('') :
+                        '<p>У вас пока нет рефералов</p>'
+                    }
                 </div>
             </div>
         `;

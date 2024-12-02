@@ -23,6 +23,12 @@ class InfluencerGame {
         // Добавляем обработчики платежей
         this.telegram.onEvent('invoiceClosed', this.handleInvoiceClosed.bind(this));
 
+        // Проверяем реферальный параметр при запуске
+        const startParam = new URLSearchParams(window.location.search).get('start_param');
+        if (startParam && startParam.startsWith('ref_')) {
+            this.referrerId = startParam.replace('ref_', '');
+        }
+
         this.init();
     }
 
@@ -52,7 +58,10 @@ class InfluencerGame {
                     description: "Единоразовый взнос для начала игры",
                     currency: "XTR",
                     prices: [{label: "Вход", amount: 50}],
-                    payload: JSON.stringify('entry_payment')
+                    payload: JSON.stringify({
+                        type: 'entry_payment',
+                        referrerId: this.referrerId // Добавляем ID реферера
+                    })
                 };
 
                 try {
@@ -65,7 +74,7 @@ class InfluencerGame {
                 this.currentUser = userDoc.data();
                 this.points = this.currentUser.points;
                 this.stars = this.currentUser.stars;
-                this.referrals = this.currentUser.referrals;
+                this.referrals = this.currentUser.referrals || [];
             }
         } catch (error) {
             console.error('Error initializing user:', error);
@@ -121,7 +130,8 @@ class InfluencerGame {
 
     showFriendsPage() {
         const content = document.getElementById('content');
-        const referralCode = this.currentUser?.id ? `ref_${this.currentUser.id}` : '';
+        const botUsername = 'influenc_bot';
+        const referralLink = `https://t.me/${botUsername}/start?start_param=ref_${this.currentUser?.id}`;
 
         content.innerHTML = `
             <div class="friends-section">
@@ -129,7 +139,7 @@ class InfluencerGame {
                 <p>За каждого приглашенного друга вы получите 10 influencer!</p>
                 <div class="referral-link">
                     <p>Ваша реферальная ссылка:</p>
-                    <input type="text" readonly value="https://t.me/influenc_bot?start=${referralCode}" />
+                    <input type="text" readonly value="${referralLink}" />
                     <button onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">
                         Копировать
                     </button>
@@ -214,23 +224,38 @@ class InfluencerGame {
         console.log('Invoice closed:', event);
         if (event.status === 'paid') {
             const payload = JSON.parse(event.payload);
-            if (payload === 'entry_payment') {
+            if (payload.type === 'entry_payment') {
                 // Обработка входного платежа
                 const userData = {
                     id: this.telegram.initDataUnsafe.user.id,
                     username: this.telegram.initDataUnsafe.user.username,
                     first_name: this.telegram.initDataUnsafe.user.first_name,
                     points: 0,
-                    stars: 50, // Начальные звезды после оплаты входа
+                    stars: 50,
                     referrals: [],
                     created_at: firebase.firestore.FieldValue.serverTimestamp(),
                     last_bonus: null,
-                    has_paid_entry: true
+                    has_paid_entry: true,
+                    referred_by: payload.referrerId // Сохраняем кто пригласил
                 };
+
+                // Создаем пользователя
                 await this.db.collection('users').doc(String(this.telegram.initDataUnsafe.user.id)).set(userData);
+
+                // Если есть реферер, начисляем ему бонус
+                if (payload.referrerId) {
+                    const refererDoc = await this.db.collection('users').doc(payload.referrerId).get();
+                    if (refererDoc.exists) {
+                        const refererData = refererDoc.data();
+                        await this.db.collection('users').doc(payload.referrerId).update({
+                            points: refererData.points + 10,
+                            referrals: [...refererData.referrals, this.telegram.initDataUnsafe.user.id]
+                        });
+                    }
+                }
+
                 this.currentUser = userData;
                 this.stars = userData.stars;
-                this.telegram.MainButton.hide();
                 this.showPage('rating');
             } else if (payload === 'stars_purchase') {
                 // Обработка покупки дополнительных звезд
@@ -262,7 +287,7 @@ class InfluencerGame {
             await this.telegram.showPaymentForm(invoice);
         } catch (error) {
             console.error('Payment error:', error);
-            alert('Ошибка при создании платежа');
+            alert('Ошибк�� при создании платежа');
         }
     }
 

@@ -15,6 +15,12 @@ class InfluencerGame {
     constructor() {
         console.log('Game initializing...');
         this.telegram = window.Telegram.WebApp;
+
+        // Применяем тему Telegram
+        document.documentElement.style.setProperty('--background-color', this.telegram.themeParams.bg_color || '#1A1B1F');
+        document.documentElement.style.setProperty('--text-color', this.telegram.themeParams.text_color || '#FFFFFF');
+        document.documentElement.style.setProperty('--card-bg', this.telegram.themeParams.secondary_bg_color || '#242529');
+
         this.db = firebase.firestore();
         this.points = 0;
         this.referrals = [];

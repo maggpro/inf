@@ -20,6 +20,9 @@ class InfluencerGame {
         this.referrals = [];
         this.stars = 0;
 
+        // Расширяем приложение на весь экран
+        this.telegram.expand();
+
         // Добавляем обработчики платежей
         this.telegram.onEvent('invoiceClosed', this.handleInvoiceClosed.bind(this));
 
@@ -132,32 +135,46 @@ class InfluencerGame {
         const content = document.getElementById('content');
         const botUsername = 'influenc_bot';
         const referralLink = this.currentUser && this.currentUser.id ?
-            `https://t.me/${botUsername}/start?start_param=ref_${this.currentUser.id}` :
+            `https://t.me/${botUsername}?start=ref_${this.currentUser.id}` :
             'Сначала войдите в игру';
 
         content.innerHTML = `
             <div class="friends-section">
-                <h2>Пригласите друзей</h2>
-                <p>За каждого приглашенного друга вы получите 10 influencer!</p>
+                <h2> Пригласите друзей</h2>
+                <div class="rewards-info">
+                    <p>🎁 За каждого приглашенного друга:</p>
+                    <ul>
+                        <li>+10 influencer сразу</li>
+                        <li>5% от всех его покупок</li>
+                    </ul>
+                </div>
                 <div class="referral-link">
-                    <p>Ваша реферальная ссылка:</p>
+                    <p>🔗 Ваша реферальная ссылка:</p>
                     ${this.currentUser && this.currentUser.id ? `
-                        <input type="text" readonly value="${referralLink}" />
-                        <button onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">
-                            Копировать
-                        </button>
-                    ` : '<p>Реферальная ссылка будет доступна после входа в игру</p>'}
+                        <div class="link-container">
+                            <input type="text" readonly value="${referralLink}" />
+                            <button onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">
+                                <span>📋</span>
+                            </button>
+                        </div>
+                        <p class="copy-hint">Нажмите кнопку справа, чтобы скопировать</p>
+                    ` : '<p class="no-link">Реферальная ссылка будет доступна после входа в игру</p>'}
                 </div>
                 <div class="referrals-list">
-                    <h3>Ваши рефералы:</h3>
+                    <h3>🤝 Ваши рефералы</h3>
                     ${this.referrals.length ?
-                        this.referrals.map(ref => `
-                            <div class="referral-item">
-                                <span class="username">${ref.username || 'Аноним'}</span>
-                                <span class="points">${ref.points || 0} points</span>
-                            </div>
-                        `).join('') :
-                        '<p>У вас пока нет рефералов</p>'
+                        `<div class="referrals-grid">
+                            ${this.referrals.map(ref => `
+                                <div class="referral-item">
+                                    <div class="ref-avatar">👤</div>
+                                    <div class="ref-info">
+                                        <span class="username">${ref.username || 'Аноним'}</span>
+                                        <span class="points">💎 ${ref.points || 0}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>` :
+                        '<p class="no-referrals">У вас пока нет рефералов</p>'
                     }
                 </div>
             </div>

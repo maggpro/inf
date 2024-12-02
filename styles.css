@@ -198,3 +198,107 @@ body {
     color: var(--tg-theme-text-color);
     opacity: 0.8;
 }
+
+/* Модальное окно оплаты */
+.payment-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.payment-options {
+    background: var(--tg-theme-bg-color);
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.stars-packages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.stars-package {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    border: 2px solid var(--tg-theme-button-color);
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.stars-package:hover {
+    background: rgba(64, 167, 227, 0.1);
+}
+
+.stars-package .amount {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.stars-package .bonus {
+    color: #4CAF50;
+    font-size: 0.9em;
+    margin: 5px 0;
+}
+
+.stars-package .price {
+    color: var(--tg-theme-button-color);
+}
+
+.custom-amount {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.custom-amount input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.buy-custom {
+    padding: 10px 20px;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Уведомления */
+.success-notification {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #4CAF50;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.success-notification.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}

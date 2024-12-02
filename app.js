@@ -261,37 +261,115 @@ class InfluencerGame {
                 this.currentUser = userData;
                 this.stars = userData.stars;
                 this.showPage('rating');
-            } else if (payload === 'stars_purchase') {
-                // Обработка покупки дополнительных звезд
-                const amount = event.total_amount;
-                this.stars += amount;
-                this.points += amount;
+            } else if (payload.type === 'stars_purchase') {
+                // Обработка покупки Stars с бонусами
+                const amount = payload.amount;
+                const bonus = payload.bonus || 0;
+                const totalAmount = amount + bonus;
+
+                this.stars += totalAmount;
+                this.points += totalAmount;
+
                 await this.db.collection('users').doc(String(this.currentUser.id)).update({
                     stars: this.stars,
-                    points: this.points
+                    points: this.points,
+                    transactions: firebase.firestore.FieldValue.arrayUnion({
+                        type: 'purchase',
+                        amount: amount,
+                        bonus: bonus,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    })
                 });
+
                 this.updateUI();
+                this.showSuccessMessage(`Успешно! +${amount} Stars ${bonus ? `(+${bonus} бонус)` : ''}`);
             }
         }
     }
 
     async handlePayment() {
         try {
-            const amount = parseInt(prompt('Введите количество Stars для покупки:'));
-            if (isNaN(amount) || amount <= 0) return;
+            const content = document.createElement('div');
+            content.className = 'payment-modal';
+            content.innerHTML = `
+                <div class="payment-options">
+                    <h3>Выберите количество Stars</h3>
+                    <div class="stars-packages">
+                        <button class="stars-package" data-amount="100">
+                            <span class="amount">100 ⭐️</span>
+                            <span class="bonus">+10 бонус</span>
+                            <span class="price">100 Stars</span>
+                        </button>
+                        <button class="stars-package" data-amount="500">
+                            <span class="amount">500 ⭐️</span>
+                            <span class="bonus">+100 бонус</span>
+                            <span class="price">500 Stars</span>
+                        </button>
+                        <button class="stars-package" data-amount="1000">
+                            <span class="amount">1000 ⭐️</span>
+                            <span class="bonus">+300 бонус</span>
+                            <span class="price">1000 Stars</span>
+                        </button>
+                    </div>
+                    <div class="custom-amount">
+                        <input type="number" min="10" placeholder="Или введите своё количество" />
+                        <button class="buy-custom">Купить</button>
+                    </div>
+                </div>
+            `;
 
-            const invoice = {
-                title: "Покупка Stars",
-                description: `Покупка ${amount} Telegram Stars`,
-                currency: "XTR",
-                prices: [{label: "Stars", amount: amount}],
-                payload: JSON.stringify('stars_purchase')
+            document.body.appendChild(content);
+
+            // Обработчики для пакетов
+            const handlePackageClick = async (amount) => {
+                const bonus = amount >= 1000 ? 300 : amount >= 500 ? 100 : amount >= 100 ? 10 : 0;
+                const invoice = {
+                    title: "Покупка Stars",
+                    description: `Покупка ${amount} Stars ${bonus ? `(+${bonus} бонус)` : ''}`,
+                    currency: "XTR",
+                    prices: [{label: "Stars", amount: amount}],
+                    payload: JSON.stringify({
+                        type: 'stars_purchase',
+                        amount: amount,
+                        bonus: bonus
+                    })
+                };
+
+                try {
+                    await this.telegram.showPaymentForm(invoice);
+                    document.body.removeChild(content);
+                } catch (error) {
+                    console.error('Payment error:', error);
+                }
             };
 
-            await this.telegram.showPaymentForm(invoice);
+            // Добавляем обработчики событий
+            content.querySelectorAll('.stars-package').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    handlePackageClick(parseInt(btn.dataset.amount));
+                });
+            });
+
+            const customInput = content.querySelector('input');
+            const buyCustomBtn = content.querySelector('.buy-custom');
+            buyCustomBtn.addEventListener('click', () => {
+                const amount = parseInt(customInput.value);
+                if (amount && amount >= 10) {
+                    handlePackageClick(amount);
+                } else {
+                    alert('Минимальная сумма: 10 Stars');
+                }
+            });
+
+            // Закрытие по клику вне модального окна
+            content.addEventListener('click', (e) => {
+                if (e.target === content) {
+                    document.body.removeChild(content);
+                }
+            });
         } catch (error) {
             console.error('Payment error:', error);
-            alert('Ошибк при создании платежа');
+            alert('Ошибка при создании платежа');
         }
     }
 
@@ -303,6 +381,23 @@ class InfluencerGame {
                 <p>Звезды: ${this.stars} ⭐️</p>
             `;
         }
+    }
+
+    showSuccessMessage(message) {
+        const notification = document.createElement('div');
+        notification.className = 'success-notification';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 2000);
+        }, 100);
     }
 }
 

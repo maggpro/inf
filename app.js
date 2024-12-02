@@ -1,4 +1,4 @@
-// Обновляем конфигурацию Firebase
+// Конфигурация Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyD37QLRUg3rsT5upQddh7JquYsAjDb35Pk",
     authDomain: "testwf-cd5ad.firebaseapp.com",
@@ -20,6 +20,10 @@ class InfluencerGame {
         this.referrals = [];
         this.stars = 0;
 
+        // Подписываемся на события платежей от Telegram
+        this.telegram.onEvent('mainButtonClicked', this.handleMainButtonClick.bind(this));
+        this.telegram.onEvent('invoiceClosed', this.handleInvoiceClosed.bind(this));
+
         this.init();
     }
 
@@ -28,6 +32,57 @@ class InfluencerGame {
         this.initNavigation();
         this.checkDailyBonus();
         this.showPage('rating');
+
+        // Проверяем параметры старта (для реферальной системы)
+        const startParam = new URLSearchParams(window.location.search).get('start');
+        if (startParam) {
+            await this.handleReferral(startParam);
+        }
+    }
+
+    async handlePayment(amount, type = 'stars_purchase') {
+        try {
+            // Создаем транзакцию в Firestore
+            const transactionRef = await this.db.collection('transactions').add({
+                userId: this.currentUser.id,
+                amount: amount,
+                type: type,
+                status: 'pending',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // Показываем форму оплаты
+            const invoice = {
+                title: type === 'entry' ? "Вход в игру" : "Покупка Stars",
+                description: type === 'entry' ?
+                    "Единоразовый взнос для начала игры" :
+                    `Покупка ${amount} Telegram Stars`,
+                currency: "XTR",
+                prices: [{label: type === 'entry' ? "Вход" : "Stars", amount: amount}],
+                payload: JSON.stringify({
+                    transactionId: transactionRef.id,
+                    type: type
+                })
+            };
+
+            const result = await this.telegram.showPaymentForm(invoice);
+
+            // Обновляем транзакцию и начисляем очки
+            if (result) {
+                await transactionRef.update({
+                    status: 'completed'
+                });
+
+                // Обновляем баланс пользователя
+                this.points += amount;
+                this.stars += amount;
+                await this.saveUserData();
+                this.updateUI();
+            }
+        } catch (error) {
+            console.error('Payment error:', error);
+            alert('Ошибка при обработке платежа');
+        }
     }
 
     async initUser() {

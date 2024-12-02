@@ -25,9 +25,63 @@ class InfluencerGame {
 
     async init() {
         console.log('Starting initialization...');
+        await this.initUser();
         this.initNavigation();
         await this.showPage('rating');
         console.log('Initialization complete');
+    }
+
+    async initUser() {
+        const tgUser = this.telegram.initDataUnsafe.user;
+        if (!tgUser) {
+            console.log('No Telegram user data');
+            return;
+        }
+
+        try {
+            const userDoc = await this.db.collection('users').doc(String(tgUser.id)).get();
+
+            if (!userDoc.exists) {
+                console.log('New user, requesting entry payment');
+                // Запрашиваем входной платеж
+                const invoice = {
+                    title: "Вход в игру Influencer",
+                    description: "Единоразовый взнос для начала игры",
+                    currency: "XTR",
+                    prices: [{label: "Вход", amount: 50}],
+                    payload: "entry_payment"
+                };
+
+                try {
+                    await this.telegram.showPaymentForm(invoice);
+                    // После успешной оплаты создаем пользователя
+                    const userData = {
+                        id: tgUser.id,
+                        username: tgUser.username,
+                        first_name: tgUser.first_name,
+                        points: 0,
+                        stars: 0,
+                        referrals: [],
+                        created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                        last_bonus: null,
+                        has_paid_entry: true
+                    };
+                    await this.db.collection('users').doc(String(tgUser.id)).set(userData);
+                    this.currentUser = userData;
+                } catch (error) {
+                    console.error('Entry payment error:', error);
+                    alert('Для начала игры необходимо оплатить вход');
+                    return;
+                }
+            } else {
+                this.currentUser = userDoc.data();
+                this.points = this.currentUser.points;
+                this.stars = this.currentUser.stars;
+                this.referrals = this.currentUser.referrals;
+            }
+        } catch (error) {
+            console.error('Error initializing user:', error);
+        }
     }
 
     initNavigation() {

@@ -53,39 +53,24 @@ class InfluencerGame {
     }
 
     async requestEntryPayment() {
-        const invoice = {
-            title: "Вход в игру Influencer",
-            description: "Единоразовый взнос для начала игры",
-            currency: "XTR",
-            prices: [{
-                label: "Вход",
-                amount: 5000
-            }],
-            provider_token: "",
-            photo_url: null,
-            photo_size: 0,
-            photo_width: 0,
-            photo_height: 0,
-            need_name: false,
-            need_phone_number: false,
-            need_email: false,
-            need_shipping_address: false,
-            send_phone_number_to_provider: false,
-            send_email_to_provider: false,
-            is_flexible: false,
-            max_tip_amount: 0,
-            suggested_tip_amounts: [],
-            start_parameter: "entry_payment",
-            payload: "entry_payment_50"
-        };
-
         try {
-            console.log('Showing payment form:', invoice);
-            const result = await window.Telegram.WebApp.showPaymentForm(invoice);
-            console.log('Payment result:', result);
+            // Формируем ссылку для оплаты Stars
+            const botUsername = 'influenc_bot';
+            const paymentUrl = `https://t.me/${botUsername}/start?startapp=buy_stars_50`;
+
+            console.log('Opening payment link:', paymentUrl);
+
+            // Открываем ссылку внутри Telegram
+            window.Telegram.WebApp.openTelegramLink(paymentUrl);
+
+            // Добавляем обработчик возврата в приложение
+            window.Telegram.WebApp.onEvent('viewportChanged', () => {
+                console.log('Returned to app, checking payment status...');
+                // Здесь можно добавить проверку статуса платежа
+            });
         } catch (error) {
-            console.error('Stars payment error:', error);
-            alert('Ошибка при оплате Stars. Проверьте наличие Stars в кошельке. 01');
+            console.error('Payment error:', error);
+            alert('Ошибка при открытии формы оплаты. Код: 02');
         }
     }
 }

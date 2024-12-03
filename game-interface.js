@@ -45,13 +45,10 @@ class InfluencerGame {
 
     async requestEntryPayment() {
         console.log('WebApp Info:', {
-            version: this.telegram.version,
-            platform: this.telegram.platform,
-            isExpanded: this.telegram.isExpanded,
-            initDataUnsafe: this.telegram.initDataUnsafe
+            version: window.Telegram.WebApp.version,
+            platform: window.Telegram.WebApp.platform
         });
 
-        // Формат точно как в stars_manager.py
         const invoice = {
             title: "Вход в игру Influencer",
             description: "Единоразовый взнос для начала игры",
@@ -59,26 +56,15 @@ class InfluencerGame {
             prices: [{
                 label: "Вход",
                 amount: 5000
-            }],
-            payload: JSON.stringify({
-                type: 'entry_payment'
-            }),
-            need_name: false,
-            need_phone_number: false,
-            need_email: false,
-            need_shipping_address: false,
-            send_phone_number_to_provider: false,
-            send_email_to_provider: false,
-            is_flexible: false
+            }]
         };
 
         try {
             console.log('Trying to show payment form with invoice:', invoice);
-            const result = await this.telegram.showPaymentForm(invoice);
+            const result = await window.Telegram.WebApp.showPaymentForm(invoice);
             console.log('Payment form result:', result);
         } catch (error) {
             console.error('Payment error:', error);
-            // Показываем полное сообщение об ошибке для отладки
             alert(`Ошибка оплаты: ${error.message}`);
         }
     }

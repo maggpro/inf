@@ -1,12 +1,13 @@
 async requestEntryPayment() {
+    const amount = 50;
     const invoice = {
-        title: 'Вход в игру',
-        description: '💫 50 Stars',
-        payload: 'stars_entry_50',
+        title: `Покупка ${amount} Stars`,
+        description: `💫 ${amount} Stars`,
+        payload: `stars_${amount}`,
         currency: 'XTR',
         prices: [{
-            label: '50 Stars',
-            amount: 5000
+            label: `${amount} Stars`,
+            amount: amount * 100
         }],
         provider_token: null,
         need_name: false,
@@ -19,19 +20,9 @@ async requestEntryPayment() {
 
     try {
         console.log('Showing payment form:', invoice);
-        // Используем MainButton для инициации платежа
-        this.telegram.MainButton.setText('Оплатить 50 Stars');
-        this.telegram.MainButton.show();
-        this.telegram.MainButton.onClick(() => {
-            this.telegram.showPaymentForm(invoice)
-                .then(result => {
-                    console.log('Payment form result:', result);
-                })
-                .catch(error => {
-                    console.error('Payment error:', error);
-                });
-        });
+        const result = await this.telegram.showPaymentForm(invoice);
+        console.log('Payment form result:', result);
     } catch (error) {
-        console.error('Payment setup error:', error);
+        console.error('Payment error:', error);
     }
 }

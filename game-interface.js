@@ -47,36 +47,31 @@ class InfluencerGame {
         console.log('WebApp Info:', {
             version: this.telegram.version,
             platform: this.telegram.platform,
-            initData: this.telegram.initData
+            isExpanded: this.telegram.isExpanded,
+            initDataUnsafe: this.telegram.initDataUnsafe
         });
 
-        // Упрощаем объект invoice до минимально необходимых полей
+        // Проверяем, что приложение открыто через бота
+        if (!this.telegram.initDataUnsafe?.user?.id) {
+            alert('Пожалуйста, откройте приложение через @influenc_bot');
+            return;
+        }
+
         const invoice = {
             title: 'Вход в игру',
-            description: '💫 50 Stars',
+            description: '50 Stars',
             currency: 'XTR',
             prices: [{
-                label: '50 Stars',
-                amount: 5000 // 50 Stars = 5000 единиц
-            }],
-            payload: 'entry_payment'
+                label: 'Вход',
+                amount: 5000
+            }]
         };
 
         try {
-            // Используем MainButton для открытия формы оплаты
-            this.telegram.MainButton.text = "Оплатить 50 Stars";
-            this.telegram.MainButton.show();
-            this.telegram.MainButton.onClick(() => {
-                try {
-                    this.telegram.showPaymentForm(invoice);
-                } catch (e) {
-                    console.error('Payment form error:', e);
-                    alert('Ошибка при открытии формы оплаты');
-                }
-            });
+            await this.telegram.showPaymentForm(invoice);
         } catch (error) {
-            console.error('Entry payment error:', error);
-            alert('Произошла ошибка. Пожалуйста, попробуйте позже.');
+            console.error('Payment error:', error);
+            alert(error.message || 'Ошибка оплаты');
         }
     }
 }

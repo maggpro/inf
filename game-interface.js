@@ -1,19 +1,3 @@
-// Конфигурация Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyD37QLRUg3rsT5upQddh7JquYsAjDb35Pk",
-    authDomain: "testwf-cd5ad.firebaseapp.com",
-    projectId: "testwf-cd5ad",
-    storageBucket: "testwf-cd5ad.appspot.com",
-    messagingSenderId: "68921357629",
-    appId: "1:68921357629:web:xxxxxxxxxxxxxx"
-};
-
-// Инициализируем Firebase
-firebase.initializeApp(firebaseConfig);
-
-// Весь остальной код интерфейса из старого app.js
-// ... (тут будет весь код класса InfluencerGame, кроме методов оплаты)
-
 class InfluencerGame {
     constructor() {
         console.log('Game initializing...');
@@ -30,16 +14,11 @@ class InfluencerGame {
     }
 
     async init() {
-        console.log('Starting initialization...');
-        // Для тестирования всегда показываем экран входа
         this.showEntryScreen();
     }
 
     showEntryScreen() {
-        console.log('Rendering entry screen');
         const content = document.getElementById('content');
-
-        // Скрываем навигацию
         document.querySelector('.navigation').style.display = 'none';
 
         content.innerHTML = `
@@ -62,45 +41,31 @@ class InfluencerGame {
                 </div>
             </div>
         `;
-        console.log('Entry screen rendered');
     }
 
     async requestEntryPayment() {
-        console.log('Requesting entry payment...');
-
         const invoice = {
-            title: 'Вход в игру Influencer',
-            description: ' Единоразовый взнос 50 Stars для начала игры',
+            title: 'Вход в игру',
+            description: '💫 50 Stars\n🎁 Доступ к игре и всем функциям',
             currency: 'XTR',
             prices: [{
-                label: '50 Stars',
+                label: 'Вход',
                 amount: 5000
             }],
-            payload: JSON.stringify({
-                type: 'entry_payment',
-                referrerId: this.referrerId
-            })
+            payload: 'entry_payment_50'
         };
 
         try {
-            if (!this.telegram.showPaymentForm) {
-                console.error('Payment method not available');
-                alert('Платежи не поддерживаются в вашей версии Telegram');
-                return;
-            }
-
-            console.log('Showing payment form with invoice:', invoice);
-            const result = await this.telegram.showPaymentForm(invoice);
-            console.log('Payment form result:', result);
+            console.log('Showing payment form:', invoice);
+            await this.telegram.showPaymentForm(invoice);
         } catch (error) {
-            console.error('Payment error:', error);
-            alert('Произошла ошибка при открытии формы оплаты. Убедитесь, что у вас есть Telegram Stars.');
+            console.error('Entry payment error:', error);
+            alert('Убедитесь, что у вас есть Telegram Stars');
         }
     }
 }
 
 // Инициализация игры
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, creating game instance...');
     window.game = new InfluencerGame();
 });

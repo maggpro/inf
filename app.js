@@ -72,9 +72,7 @@ class InfluencerGame {
 
             if (!userDoc.exists) {
                 console.log('New user, showing entry screen');
-                // Скрываем меню для новых пользователей
                 document.querySelector('.navigation').style.display = 'none';
-                // Показываем экран входа
                 this.showEntryScreen();
             } else {
                 console.log('Existing user, loading data');
@@ -82,7 +80,6 @@ class InfluencerGame {
                 this.points = this.currentUser.points;
                 this.stars = this.currentUser.stars;
                 this.referrals = this.currentUser.referrals || [];
-                // Показываем меню для существующих пользователей
                 document.querySelector('.navigation').style.display = 'flex';
             }
         } catch (error) {
@@ -116,6 +113,9 @@ class InfluencerGame {
             case 'about':
                 this.showAboutPage();
                 break;
+            case 'shop':
+                this.showShopPage();
+                break;
         }
     }
 
@@ -124,6 +124,7 @@ class InfluencerGame {
         content.innerHTML = `
             <div class="user-stats">
                 <h2>${this.points.toLocaleString()} influencer</h2>
+                <div class="stars-count">💫 ${this.stars} Stars</div>
             </div>
             <div class="rating-list">
                 <h3>Топ игроков</h3>
@@ -186,6 +187,32 @@ class InfluencerGame {
         `;
     }
 
+    showShopPage() {
+        const content = document.getElementById('content');
+        content.innerHTML = `
+            <div class="shop-section">
+                <h2>💫 Магазин Stars</h2>
+                <div class="stars-packages">
+                    <div class="stars-package" onclick="game.buyStars(50)">
+                        <div class="amount">50 Stars</div>
+                        <div class="bonus">+5 бонус</div>
+                        <div class="price">50 XTR</div>
+                    </div>
+                    <div class="stars-package" onclick="game.buyStars(100)">
+                        <div class="amount">100 Stars</div>
+                        <div class="bonus">+15 бонус</div>
+                        <div class="price">100 XTR</div>
+                    </div>
+                    <div class="stars-package" onclick="game.buyStars(500)">
+                        <div class="amount">500 Stars</div>
+                        <div class="bonus">+100 бонус</div>
+                        <div class="price">500 XTR</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     showAboutPage() {
         const content = document.getElementById('content');
         content.innerHTML = `
@@ -207,16 +234,6 @@ class InfluencerGame {
                     </ul>
                 </div>
 
-                <div class="earning-ways">
-                    <h3>Способы заработка influencer:</h3>
-                    <ul>
-                        <li>✨ Покупайте Telegram Stars</li>
-                        <li>🤝 Приглашайте друзей</li>
-                        <li>📅 Получайте ежедневные бонусы</li>
-                        <li>🏆 Участвуйте в рейтинге</li>
-                    </ul>
-                </div>
-
                 <div class="season-info">
                     <h3>О текущем сезоне</h3>
                     <p>🎮 Сезон 1 продлится до 31 января 2024</p>
@@ -224,21 +241,10 @@ class InfluencerGame {
                     <p>🔥 Топ-10 игроков получат специальные награды</p>
                 </div>
 
-                <div class="token-info">
-                    <h3>О токене Influencer</h3>
-                    <p>🪙 Токен Influencer - это ваша награда за активность в игре</p>
-                    <p>📊 Распределение токенов после сезона:</p>
-                    <ul>
-                        <li>70% - пропорционально набранным очкам</li>
-                        <li>20% - топ-10 игроков</li>
-                        <li>10% - случайные награды активным игрокам</li>
-                    </ul>
-                </div>
-
                 <div class="buy-stars-section">
                     <h3>Купить Stars</h3>
                     <p>💫 Моментально получайте influencer очки за каждую звезду!</p>
-                    <button class="buy-stars-btn" onclick="game.handlePayment()">
+                    <button class="buy-stars-btn" onclick="game.showShopPage()">
                         Купить Stars
                     </button>
                 </div>
@@ -279,39 +285,40 @@ class InfluencerGame {
 
     async requestEntryPayment() {
         const invoice = {
-            title: 'Вход в игру',
-            description: '💫 50 Stars',
-            payload: 'entry_payment_50',
+            title: 'Вход в игру Influencer',
+            description: '💫 Единоразовый взнос 50 Stars для начала игры',
             currency: 'XTR',
             prices: [{
                 label: '50 Stars',
-                amount: 5000 // 50 Stars = 5000 (сумма в минимальных единицах)
+                amount: 5000
             }],
-            provider_token: null,
+            payload: JSON.stringify({
+                type: 'entry_payment',
+                referrerId: this.referrerId
+            }),
+            provider_token: '',
             need_name: false,
             need_phone_number: false,
             need_email: false,
             need_shipping_address: false,
             send_phone_number_to_provider: false,
             send_email_to_provider: false,
-            is_flexible: false,
-            max_tip_amount: 0,
-            suggested_tip_amounts: []
+            is_flexible: false
         };
 
         try {
             console.log('Showing payment form:', invoice);
             await this.telegram.showPaymentForm(invoice);
         } catch (error) {
-            console.error('Payment error:', error);
+            console.error('Entry payment error:', error);
+            alert('Для начала игры необходимо оплатить вход. Убедитесь, что у вас есть Telegram Stars.');
         }
     }
 
     async handleInvoiceClosed(event) {
         console.log('Invoice closed:', event);
         if (event.status === 'paid') {
-            const payload = JSON.parse(event.payload);
-            if (payload.type === 'entry_payment') {
+            try {
                 const userData = {
                     id: this.telegram.initDataUnsafe.user.id,
                     username: this.telegram.initDataUnsafe.user.username,
@@ -329,10 +336,43 @@ class InfluencerGame {
                 this.currentUser = userData;
                 this.stars = userData.stars;
 
-                // Показываем навигацию после успешной оплаты
                 document.querySelector('.navigation').style.display = 'flex';
                 await this.showPage('rating');
+            } catch (error) {
+                console.error('Error processing payment:', error);
+                alert('Произошла ошибка при обработке платежа. Пожалуйста, обратитесь в поддержку.');
             }
+        }
+    }
+
+    async buyStars(amount) {
+        const invoice = {
+            title: `Покупка ${amount} Stars`,
+            description: `💫 ${amount} Stars\n🎁 Бонус: +${Math.floor(amount * 0.1)} Stars`,
+            currency: 'XTR',
+            prices: [{
+                label: `${amount} Stars`,
+                amount: amount * 100
+            }],
+            payload: JSON.stringify({
+                type: 'stars_purchase',
+                amount: amount
+            }),
+            provider_token: '',
+            need_name: false,
+            need_phone_number: false,
+            need_email: false,
+            need_shipping_address: false,
+            send_phone_number_to_provider: false,
+            send_email_to_provider: false,
+            is_flexible: false
+        };
+
+        try {
+            await this.telegram.showPaymentForm(invoice);
+        } catch (error) {
+            console.error('Stars purchase error:', error);
+            alert('Произошла ошибка при покупке Stars. Попробуйте позже.');
         }
     }
 }

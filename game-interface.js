@@ -55,11 +55,7 @@ class InfluencerGame {
     async requestEntryPayment() {
         console.log('Payment request started');
 
-        // Создаем MainButton
-        const MainButton = window.Telegram.WebApp.MainButton;
-        MainButton.setText('Оплатить 50 Stars');
-        MainButton.show();
-
+        // Минимальный набор параметров для Stars
         const invoice = {
             title: "Вход в игру",
             description: "50 Stars",
@@ -67,37 +63,24 @@ class InfluencerGame {
             prices: [{
                 label: "Вход",
                 amount: 5000
-            }]
+            }],
+            payload: "entry_payment"
         };
 
         try {
-            console.log('Setting up payment...');
+            console.log('Trying to show payment form with:', invoice);
 
-            // Добавляем обработчик нажатия на кнопку
-            MainButton.onClick(async () => {
-                try {
-                    console.log('Button clicked, showing payment form');
-                    const result = await window.Telegram.WebApp.showPopup({
-                        title: 'Оплата Stars',
-                        message: 'Подтвердите оплату 50 Stars',
-                        buttons: [{
-                            type: 'pay',
-                            text: 'Оплатить',
-                            params: invoice
-                        }]
-                    });
-                    console.log('Popup result:', result);
-                } catch (e) {
-                    console.error('Payment popup error:', e);
-                    alert('Ошибка при открытии формы оплаты: ' + e.message);
-                }
-            });
+            // Проверяем доступность метода
+            if (!window.Telegram?.WebApp?.showPaymentForm) {
+                throw new Error('Payment method not available');
+            }
 
-            console.log('Payment setup complete');
+            // Прямой вызов метода оплаты
+            const result = await window.Telegram.WebApp.showPaymentForm(invoice);
+            console.log('Payment result:', result);
         } catch (error) {
-            console.error('Payment setup error:', error);
-            MainButton.hide();
-            alert('Ошибка при настройке оплаты: ' + error.message);
+            console.error('Payment error:', error);
+            alert('Ошибка при оплате: ' + error.message);
         }
     }
 }

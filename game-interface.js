@@ -42,7 +42,7 @@ class InfluencerGame {
                             <li>💎 Возможность заработка</li>
                             <li>🏆 Участие в рейтинге</li>
                             <li>💰 Токены в конце сезона</li>
-                            <li>v. 0.0.1</li>
+                            <li>v. 0.0.2</li>
                         </ul>
                     </div>
                     <button class="entry-button" onclick="game.requestEntryPayment()">
@@ -56,7 +56,7 @@ class InfluencerGame {
     async requestEntryPayment() {
         console.log('Payment request started');
 
-        // Минимальный набор параметров для Stars
+        // Формат из stars_manager.py
         const invoice = {
             title: "Вход в игру",
             description: "50 Stars",
@@ -65,19 +65,27 @@ class InfluencerGame {
                 label: "Вход",
                 amount: 5000
             }],
-            payload: "entry_payment"
+            provider_token: "",  // Пустая строка для Stars
+            photo_url: null,
+            photo_size: 0,
+            photo_width: 0,
+            photo_height: 0,
+            need_name: false,
+            need_phone_number: false,
+            need_email: false,
+            need_shipping_address: false,
+            send_phone_number_to_provider: false,
+            send_email_to_provider: false,
+            is_flexible: false,
+            max_tip_amount: 0,
+            suggested_tip_amounts: [],
+            start_parameter: "entry_payment",
+            payload: "entry_payment_50"
         };
 
         try {
-            console.log('Trying to show payment form with:', invoice);
-
-            // Проверяем доступность метода
-            if (!window.Telegram?.WebApp?.showPaymentForm) {
-                throw new Error('Payment method not available');
-            }
-
-            // Прямой вызов метода оплаты
-            const result = await window.Telegram.WebApp.showPaymentForm(invoice);
+            // Используем WebApp.invokeCustomMethod для вызова нативного метода
+            const result = await window.Telegram.WebApp.invokeCustomMethod('openInvoice', invoice);
             console.log('Payment result:', result);
         } catch (error) {
             console.error('Payment error:', error);

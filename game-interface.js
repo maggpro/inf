@@ -21,10 +21,19 @@ class InfluencerGame {
         const content = document.getElementById('content');
         document.querySelector('.navigation').style.display = 'none';
 
+        // Получаем данные пользователя из WebApp
+        const user = this.telegram.initDataUnsafe?.user || {};
+        const username = user.username ? `@${user.username}` : 'Гость';
+        const userId = user.id || 'Не определен';
+
         content.innerHTML = `
             <div class="entry-screen">
                 <div class="entry-card">
-                    <h2> Добро пожаловать в Influencer</h2>
+                    <div class="user-info">
+                        <p class="username">👤 ${username}</p>
+                        <p class="user-id">🆔 ${userId}</p>
+                    </div>
+                    <h2>Добро пожаловать в Influencer</h2>
                     <div class="entry-info">
                         <p>Для начала игры необходимо внести:</p>
                         <div class="entry-amount">50 ⭐️</div>
@@ -76,7 +85,7 @@ class InfluencerGame {
             console.log('Payment result:', result);
         } catch (error) {
             console.error('Stars payment error:', error);
-            alert('Ошибка при оплате Stars. Проверьте наличие Stars в кошельке.');
+            alert('Ошибка при оплате Stars. Проверьте наличие Stars в кошельке. 01');
         }
     }
 }

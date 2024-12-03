@@ -42,6 +42,7 @@ class InfluencerGame {
                             <li>💎 Возможность заработка</li>
                             <li>🏆 Участие в рейтинге</li>
                             <li>💰 Токены в конце сезона</li>
+                            <li>v. 0.0.1</li>
                         </ul>
                     </div>
                     <button class="entry-button" onclick="game.requestEntryPayment()">

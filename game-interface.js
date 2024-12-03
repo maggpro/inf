@@ -44,6 +44,23 @@ class InfluencerGame {
     }
 
     async requestEntryPayment() {
+        // Проверяем пользователя
+        const user = this.telegram.initDataUnsafe?.user;
+        console.log('Current user:', user);
+
+        if (!user) {
+            console.error('User not found');
+            alert('Пожалуйста, откройте приложение через Telegram бота');
+            return;
+        }
+
+        // Проверяем инициализацию
+        console.log('Init data:', {
+            user: user,
+            startParam: this.telegram.initDataUnsafe?.start_param,
+            initData: this.telegram.initData
+        });
+
         const invoice = {
             title: "Вход в игру",
             description: "50 Stars",
@@ -52,7 +69,11 @@ class InfluencerGame {
                 label: "Вход",
                 amount: 5000
             }],
-            payload: "entry_payment"
+            payload: JSON.stringify({
+                user_id: user.id,
+                username: user.username,
+                type: 'entry_payment'
+            })
         };
 
         try {
@@ -60,7 +81,11 @@ class InfluencerGame {
             await this.telegram.showPaymentForm(invoice);
         } catch (error) {
             console.error('Entry payment error:', error);
-            alert(`Ошибка оплаты: ${error.message}\nПроверьте консоль для деталей`);
+            if (!user.id) {
+                alert('Пожалуйста, войдите в Telegram');
+            } else {
+                alert(`Ошибка оплаты: ${error.message}\nПроверьте консоль для деталей`);
+            }
         }
     }
 }

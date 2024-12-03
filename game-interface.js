@@ -42,7 +42,7 @@ class InfluencerGame {
                             <li>💎 Возможность заработка</li>
                             <li>🏆 Участие в рейтинге</li>
                             <li>💰 Токены в конце сезона</li>
-                            <li>v. 0.0.3</li>
+                            <li>v. 0.0.4</li>
                         </ul>
                     </div>
                     <button class="entry-button" onclick="game.requestEntryPayment()">
@@ -56,8 +56,16 @@ class InfluencerGame {
     async requestEntryPayment() {
         console.log('Payment request started');
 
-        // Проверяем доступные методы
-        console.log('Available methods:', Object.keys(window.Telegram.WebApp));
+        // Проверяем доступность WebApp
+        if (!this.telegram) {
+            console.error('Telegram WebApp not available');
+            alert('Пожалуйста, откройте в Telegram');
+            return;
+        }
+
+        // Логируем версию и доступные методы
+        console.log('WebApp version:', this.telegram.version);
+        console.log('Available methods:', Object.keys(this.telegram));
 
         const invoice = {
             title: "Вход в игру",
@@ -68,26 +76,21 @@ class InfluencerGame {
                 amount: 5000
             }],
             provider_token: "",
-            payload: "entry_payment_50"
+            payload: "entry_payment_50",
+            need_shipping_address: false,
+            send_phone_number_to_provider: false,
+            send_email_to_provider: false,
+            is_flexible: false,
+            disable_notification: false
         };
 
         try {
-            // Пробуем разные методы
-            if (window.Telegram.WebApp.showPaymentForm) {
-                console.log('Using showPaymentForm');
-                await window.Telegram.WebApp.showPaymentForm(invoice);
-            } else if (window.Telegram.WebApp.openInvoice) {
-                console.log('Using openInvoice');
-                await window.Telegram.WebApp.openInvoice(invoice);
-            } else if (window.Telegram.WebApp.PaymentForm) {
-                console.log('Using PaymentForm');
-                await window.Telegram.WebApp.PaymentForm.open(invoice);
-            } else {
-                throw new Error('No payment methods available');
-            }
+            console.log('Showing payment form:', invoice);
+            const result = await this.telegram.showPaymentForm(invoice);
+            console.log('Payment result:', result);
         } catch (error) {
             console.error('Payment error:', error);
-            alert('Ошибка при оплате: ' + error.message);
+            alert('Ошибка при оплате: ' + error.message + '\nВерсия: ' + this.telegram.version);
         }
     }
 }

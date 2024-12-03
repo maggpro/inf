@@ -63,23 +63,30 @@ class InfluencerGame {
             return;
         }
 
-        // Логируем версию
-        console.log('WebApp version:', this.telegram.version);
+        // Создаем invoice по примеру из статьи
+        const invoice = {
+            title: "Вход в игру",
+            description: "Единоразовый взнос для начала игры",
+            prices: [{
+                label: "XTR",
+                amount: 5000
+            }],
+            provider_token: "",
+            payload: "entry_payment",
+            currency: "XTR",
+            need_name: false,
+            need_phone_number: false,
+            need_email: false,
+            need_shipping_address: false,
+            send_phone_number_to_provider: false,
+            send_email_to_provider: false,
+            is_flexible: false
+        };
 
         try {
-            // Формируем URL для оплаты Stars
-            const botUsername = 'influenc_bot';
-            const amount = 50;
-            const paymentUrl = `tg://resolve?domain=${botUsername}&start=buy_stars_${amount}`;
-
-            // Открываем URL через Telegram
-            this.telegram.openTelegramLink(paymentUrl);
-
-            // Добавляем обработчик возврата
-            this.telegram.onEvent('viewportChanged', () => {
-                console.log('Returned from payment');
-                // Здесь можно обновить статус после оплаты
-            });
+            console.log('Sending invoice:', invoice);
+            // Используем answer_invoice как в статье
+            await this.telegram.answer_invoice(invoice);
         } catch (error) {
             console.error('Payment error:', error);
             alert('Ошибка при оплате: ' + error.message + '\nВерсия: ' + this.telegram.version);

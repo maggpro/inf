@@ -54,13 +54,9 @@ class InfluencerGame {
         // Логируем информацию о WebApp
         console.log('WebApp Info:', {
             version: window.Telegram.WebApp.version,
-            platform: window.Telegram.WebApp.platform
+            platform: window.Telegram.WebApp.platform,
+            methods: Object.keys(window.Telegram.WebApp)
         });
-
-        // Используем MainButton для открытия формы оплаты
-        const MainButton = window.Telegram.WebApp.MainButton;
-        MainButton.setText('Оплатить 50 Stars');
-        MainButton.show();
 
         const invoice = {
             title: "Вход в игру",
@@ -69,22 +65,20 @@ class InfluencerGame {
             prices: [{
                 label: "Вход",
                 amount: 5000
-            }]
+            }],
+            payload: "entry_payment"
         };
 
         try {
-            MainButton.onClick(async () => {
-                try {
-                    // Пробуем открыть форму оплаты через popupParams
-                    window.Telegram.WebApp.openInvoice(JSON.stringify(invoice));
-                } catch (e) {
-                    console.error('Invoice error:', e);
-                    alert('Ошибка при открытии формы оплаты');
-                }
-            });
+            if (typeof window.Telegram.WebApp.openInvoice !== 'function') {
+                throw new Error('Метод openInvoice недоступен');
+            }
+
+            console.log('Opening invoice:', invoice);
+            await window.Telegram.WebApp.openInvoice(invoice);
         } catch (error) {
             console.error('Payment error:', error);
-            alert('Ошибка: ' + error.message);
+            alert('Ошибка оплаты: ' + error.message);
         }
     }
 }

@@ -12,19 +12,7 @@ async requestEntryPayment() {
         payload: JSON.stringify({
             type: 'entry_payment',
             referrerId: this.referrerId
-        }),
-        need_name: false,
-        need_phone_number: false,
-        need_email: false,
-        need_shipping_address: false,
-        send_phone_number_to_provider: false,
-        send_email_to_provider: false,
-        is_flexible: false,
-        provider_data: {
-            name: 'Influencer Game',
-            photo_url: null,
-            start_parameter: 'entry_payment'
-        }
+        })
     };
 
     try {

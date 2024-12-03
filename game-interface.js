@@ -44,26 +44,16 @@ class InfluencerGame {
     }
 
     async requestEntryPayment() {
-        const PopupParams = window.Telegram.WebApp.PopupParams;
-
-        const params = {
-            title: "Вход в игру",
-            message: "50 Stars",
-            buttons: [{
-                type: "buy",
-                text: "Оплатить",
-                params: {
-                    currency: "XTR",
-                    amount: 5000
-                }
-            }]
-        };
-
         try {
-            await PopupParams.showPopup(params);
+            // Используем прямой вызов метода для Stars
+            await this.telegram.invokeCustomMethod('showStarsPayment', {
+                amount: 50,  // Количество Stars
+                title: 'Вход в игру',
+                description: 'Единоразовый взнос для начала игры'
+            });
         } catch (error) {
-            console.error('Payment error:', error);
-            alert('Ошибка оплаты. Попробуйте позже.');
+            console.error('Stars payment error:', error);
+            alert('Ошибка при оплате Stars. Убедитесь, что у вас есть Stars.');
         }
     }
 }

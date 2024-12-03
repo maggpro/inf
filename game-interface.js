@@ -44,14 +44,30 @@ class InfluencerGame {
     }
 
     async requestEntryPayment() {
-        console.log('WebApp Info:', {
+        // Проверяем доступность WebApp
+        if (!window.Telegram || !window.Telegram.WebApp) {
+            console.error('Telegram WebApp not available');
+            alert('Пожалуйста, откройте в Telegram');
+            return;
+        }
+
+        // Логируем все доступные методы
+        console.log('Available WebApp methods:', {
             version: window.Telegram.WebApp.version,
-            platform: window.Telegram.WebApp.platform
+            platform: window.Telegram.WebApp.platform,
+            methods: Object.keys(window.Telegram.WebApp),
+            paymentMethods: window.Telegram.WebApp.showPaymentForm ? 'Available' : 'Not available'
         });
 
+        // Проверяем версию
+        if (parseFloat(window.Telegram.WebApp.version) < 6.1) {
+            alert('Требуется Telegram версии 6.1 или выше');
+            return;
+        }
+
         const invoice = {
-            title: "Вход в игру Influencer",
-            description: "Единоразовый взнос для начала игры",
+            title: "Вход в игру",
+            description: "50 Stars",
             currency: "XTR",
             prices: [{
                 label: "Вход",
@@ -60,12 +76,18 @@ class InfluencerGame {
         };
 
         try {
-            console.log('Trying to show payment form with invoice:', invoice);
-            const result = await window.Telegram.WebApp.showPaymentForm(invoice);
-            console.log('Payment form result:', result);
+            // Пробуем получить метод оплаты
+            const paymentForm = window.Telegram.WebApp.showPaymentForm;
+            if (typeof paymentForm !== 'function') {
+                throw new Error('Payment method not available');
+            }
+
+            console.log('Showing payment form with:', invoice);
+            const result = await paymentForm(invoice);
+            console.log('Payment result:', result);
         } catch (error) {
             console.error('Payment error:', error);
-            alert(`Ошибка оплаты: ${error.message}`);
+            alert('Ошибка: ' + error.message);
         }
     }
 }

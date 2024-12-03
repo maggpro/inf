@@ -42,7 +42,7 @@ class InfluencerGame {
                             <li>💎 Возможность заработка</li>
                             <li>🏆 Участие в рейтинге</li>
                             <li>💰 Токены в конце сезона</li>
-                            <li>v. 0.0.2</li>
+                            <li>v. 0.0.3</li>
                         </ul>
                     </div>
                     <button class="entry-button" onclick="game.requestEntryPayment()">
@@ -56,7 +56,9 @@ class InfluencerGame {
     async requestEntryPayment() {
         console.log('Payment request started');
 
-        // Формат из stars_manager.py
+        // Проверяем доступные методы
+        console.log('Available methods:', Object.keys(window.Telegram.WebApp));
+
         const invoice = {
             title: "Вход в игру",
             description: "50 Stars",
@@ -65,28 +67,24 @@ class InfluencerGame {
                 label: "Вход",
                 amount: 5000
             }],
-            provider_token: "",  // Пустая строка для Stars
-            photo_url: null,
-            photo_size: 0,
-            photo_width: 0,
-            photo_height: 0,
-            need_name: false,
-            need_phone_number: false,
-            need_email: false,
-            need_shipping_address: false,
-            send_phone_number_to_provider: false,
-            send_email_to_provider: false,
-            is_flexible: false,
-            max_tip_amount: 0,
-            suggested_tip_amounts: [],
-            start_parameter: "entry_payment",
+            provider_token: "",
             payload: "entry_payment_50"
         };
 
         try {
-            // Используем WebApp.invokeCustomMethod для вызова нативного метода
-            const result = await window.Telegram.WebApp.invokeCustomMethod('openInvoice', invoice);
-            console.log('Payment result:', result);
+            // Пробуем разные методы
+            if (window.Telegram.WebApp.showPaymentForm) {
+                console.log('Using showPaymentForm');
+                await window.Telegram.WebApp.showPaymentForm(invoice);
+            } else if (window.Telegram.WebApp.openInvoice) {
+                console.log('Using openInvoice');
+                await window.Telegram.WebApp.openInvoice(invoice);
+            } else if (window.Telegram.WebApp.PaymentForm) {
+                console.log('Using PaymentForm');
+                await window.Telegram.WebApp.PaymentForm.open(invoice);
+            } else {
+                throw new Error('No payment methods available');
+            }
         } catch (error) {
             console.error('Payment error:', error);
             alert('Ошибка при оплате: ' + error.message);

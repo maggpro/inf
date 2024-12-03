@@ -524,3 +524,24 @@ body {
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
+
+.user-info {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.user-info p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.username {
+    font-weight: bold;
+}
+
+.user-id {
+    opacity: 0.8;
+}

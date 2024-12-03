@@ -44,36 +44,23 @@ class InfluencerGame {
     }
 
     async requestEntryPayment() {
-        // Формат точно как в stars_manager.py
         const invoice = {
-            title: "Вход в игру Influencer",
-            description: "Единоразовый взнос для начала игры",
+            title: "Вход в игру",
+            description: "50 Stars",
             currency: "XTR",
             prices: [{
                 label: "Вход",
                 amount: 5000
             }],
-            payload: "entry_payment_50",
-            provider_token: null,
-            photo_url: null,
-            photo_size: 0,
-            photo_width: 0,
-            photo_height: 0,
-            need_name: false,
-            need_phone_number: false,
-            need_email: false,
-            need_shipping_address: false,
-            send_phone_number_to_provider: false,
-            send_email_to_provider: false,
-            is_flexible: false
+            payload: "entry_payment"
         };
 
         try {
             console.log('Showing payment form:', invoice);
-            await window.Telegram.WebApp.showPaymentForm(invoice);
+            await this.telegram.showPaymentForm(invoice);
         } catch (error) {
             console.error('Entry payment error:', error);
-            alert('Убедитесь, что у вас есть Telegram Stars');
+            alert(`Ошибка оплаты: ${error.message}\nПроверьте консоль для деталей`);
         }
     }
 }

@@ -45,29 +45,34 @@ class InfluencerGame {
 
     async requestEntryPayment() {
         const invoice = {
-            title: "Вход в игру",
-            description: "50 Stars",
+            title: "Вход в игру Influencer",
+            description: "Единоразовый взнос для начала игры",
             currency: "XTR",
             prices: [{
                 label: "Вход",
                 amount: 5000
             }],
             provider_token: "",
-            payload: JSON.stringify({
-                type: 'entry_payment'
-            }),
+            photo_url: null,
+            photo_size: 0,
+            photo_width: 0,
+            photo_height: 0,
             need_name: false,
             need_phone_number: false,
             need_email: false,
             need_shipping_address: false,
             send_phone_number_to_provider: false,
             send_email_to_provider: false,
-            is_flexible: false
+            is_flexible: false,
+            max_tip_amount: 0,
+            suggested_tip_amounts: [],
+            start_parameter: "entry_payment",
+            payload: "entry_payment_50"
         };
 
         try {
             console.log('Showing payment form:', invoice);
-            const result = await this.telegram.showPaymentForm(invoice);
+            const result = await window.Telegram.WebApp.showPaymentForm(invoice);
             console.log('Payment result:', result);
         } catch (error) {
             console.error('Stars payment error:', error);

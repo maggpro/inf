@@ -42,7 +42,7 @@ class InfluencerGame {
                             <li>💎 Возможность заработка</li>
                             <li>🏆 Участие в рейтинге</li>
                             <li>💰 Токены в конце сезона</li>
-                            <li>v. 0.0.8</li>
+                            <li>v. 0.0.9</li>
                         </ul>
                     </div>
                     <button class="entry-button" onclick="game.requestEntryPayment()">
@@ -80,13 +80,27 @@ class InfluencerGame {
             need_shipping_address: false,
             send_phone_number_to_provider: false,
             send_email_to_provider: false,
-            is_flexible: false
+            is_flexible: false,
+            photo_url: null,
+            photo_size: 0,
+            photo_width: 0,
+            photo_height: 0,
+            start_parameter: "entry_payment"
         };
 
         try {
             console.log('Sending invoice:', invoice);
-            // Используем answer_invoice как в статье
-            await this.telegram.answer_invoice(invoice);
+            // Используем answerWebAppQuery как в статье
+            await this.telegram.answerWebAppQuery({
+                result_id: 'entry_payment',
+                type: 'invoice',
+                title: invoice.title,
+                description: invoice.description,
+                payload: invoice.payload,
+                provider_token: invoice.provider_token,
+                currency: invoice.currency,
+                prices: invoice.prices
+            });
         } catch (error) {
             console.error('Payment error:', error);
             alert('Ошибка при оплате: ' + error.message + '\nВерсия: ' + this.telegram.version);

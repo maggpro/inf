@@ -44,41 +44,36 @@ class InfluencerGame {
     }
 
     async requestEntryPayment() {
-        // Проверяем доступность WebApp
-        if (!window.Telegram || !window.Telegram.WebApp) {
-            console.error('Telegram WebApp not available');
-            alert('Пожалуйста, откройте в Telegram');
-            return;
-        }
-
-        // Логируем информацию о WebApp
-        console.log('WebApp Info:', {
-            version: window.Telegram.WebApp.version,
-            platform: window.Telegram.WebApp.platform,
-            methods: Object.keys(window.Telegram.WebApp)
-        });
-
+        // Формат точно как в stars_manager.py
         const invoice = {
-            title: "Вход в игру",
-            description: "50 Stars",
+            title: "Вход в игру Influencer",
+            description: "Единоразовый взнос для начала игры",
             currency: "XTR",
             prices: [{
                 label: "Вход",
                 amount: 5000
             }],
-            payload: "entry_payment"
+            payload: "entry_payment_50",
+            provider_token: null,
+            photo_url: null,
+            photo_size: 0,
+            photo_width: 0,
+            photo_height: 0,
+            need_name: false,
+            need_phone_number: false,
+            need_email: false,
+            need_shipping_address: false,
+            send_phone_number_to_provider: false,
+            send_email_to_provider: false,
+            is_flexible: false
         };
 
         try {
-            if (typeof window.Telegram.WebApp.openInvoice !== 'function') {
-                throw new Error('Метод openInvoice недоступен');
-            }
-
-            console.log('Opening invoice:', invoice);
-            await window.Telegram.WebApp.openInvoice(invoice);
+            console.log('Showing payment form:', invoice);
+            await window.Telegram.WebApp.showPaymentForm(invoice);
         } catch (error) {
-            console.error('Payment error:', error);
-            alert('Ошибка оплаты: ' + error.message);
+            console.error('Entry payment error:', error);
+            alert('Убедитесь, что у вас есть Telegram Stars');
         }
     }
 }

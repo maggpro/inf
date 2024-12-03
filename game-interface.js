@@ -42,7 +42,7 @@ class InfluencerGame {
                             <li>💎 Возможность заработка</li>
                             <li>🏆 Участие в рейтинге</li>
                             <li>💰 Токены в конце сезона</li>
-                            <li>v. 0.0.4</li>
+                            <li>v. 0.0.5</li>
                         </ul>
                     </div>
                     <button class="entry-button" onclick="game.requestEntryPayment()">
@@ -63,31 +63,28 @@ class InfluencerGame {
             return;
         }
 
-        // Логируем версию и доступные методы
+        // Логируем версию
         console.log('WebApp version:', this.telegram.version);
-        console.log('Available methods:', Object.keys(this.telegram));
-
-        const invoice = {
-            title: "Вход в игру",
-            description: "50 Stars",
-            currency: "XTR",
-            prices: [{
-                label: "Вход",
-                amount: 5000
-            }],
-            provider_token: "",
-            payload: "entry_payment_50",
-            need_shipping_address: false,
-            send_phone_number_to_provider: false,
-            send_email_to_provider: false,
-            is_flexible: false,
-            disable_notification: false
-        };
 
         try {
-            console.log('Showing payment form:', invoice);
-            const result = await this.telegram.showPaymentForm(invoice);
-            console.log('Payment result:', result);
+            // Используем PopupButton для показа окна оплаты
+            const result = await this.telegram.showPopup({
+                title: 'Оплата Stars',
+                message: 'Подтвердите оплату 50 Stars',
+                buttons: [
+                    {
+                        id: 'pay',
+                        type: 'buy',
+                        text: 'Оплатить',
+                        params: {
+                            currency: 'XTR',
+                            amount: 5000
+                        }
+                    },
+                    {type: 'cancel'}
+                ]
+            });
+            console.log('Popup result:', result);
         } catch (error) {
             console.error('Payment error:', error);
             alert('Ошибка при оплате: ' + error.message + '\nВерсия: ' + this.telegram.version);

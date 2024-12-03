@@ -46,21 +46,32 @@ class InfluencerGame {
     async requestEntryPayment() {
         const invoice = {
             title: "Вход в игру",
-            description: "Единоразовый взнос для начала игры",
-            currency: "XTR",  // Обязательно для Stars
+            description: "50 Stars",
+            currency: "XTR",
             prices: [{
                 label: "Вход",
-                amount: 5000  // 50 Stars = 5000 (в минимальных единицах)
+                amount: 5000
             }],
-            payload: "entry_payment"
+            provider_token: "",
+            payload: JSON.stringify({
+                type: 'entry_payment'
+            }),
+            need_name: false,
+            need_phone_number: false,
+            need_email: false,
+            need_shipping_address: false,
+            send_phone_number_to_provider: false,
+            send_email_to_provider: false,
+            is_flexible: false
         };
 
         try {
-            console.log('Sending invoice:', invoice);
-            await this.telegram.sendInvoice(invoice);
+            console.log('Showing payment form:', invoice);
+            const result = await this.telegram.showPaymentForm(invoice);
+            console.log('Payment result:', result);
         } catch (error) {
             console.error('Stars payment error:', error);
-            alert('Ошибка при оплате Stars');
+            alert('Ошибка при оплате Stars. Проверьте наличие Stars в кошельке.');
         }
     }
 }

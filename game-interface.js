@@ -42,7 +42,7 @@ class InfluencerGame {
                             <li>💎 Возможность заработка</li>
                             <li>🏆 Участие в рейтинге</li>
                             <li>💰 Токены в конце сезона</li>
-                            <li>v. 0.0.6</li>
+                            <li>v. 0.0.7</li>
                         </ul>
                     </div>
                     <button class="entry-button" onclick="game.requestEntryPayment()">
@@ -67,29 +67,19 @@ class InfluencerGame {
         console.log('WebApp version:', this.telegram.version);
 
         try {
-            // Создаем MainButton для оплаты
-            const MainButton = this.telegram.MainButton;
-            MainButton.setText('Оплатить 50 Stars');
-            MainButton.onClick(() => {
-                const invoice = {
-                    title: "Вход в игру",
-                    description: "50 Stars",
-                    currency: "XTR",
-                    prices: [{
-                        label: "Вход",
-                        amount: 5000
-                    }],
-                    payload: "entry_payment"
-                };
+            // Формируем URL для оплаты Stars
+            const botUsername = 'influenc_bot';
+            const amount = 50;
+            const paymentUrl = `tg://resolve?domain=${botUsername}&start=buy_stars_${amount}`;
 
-                try {
-                    this.telegram.openInvoice(JSON.stringify(invoice));
-                } catch (e) {
-                    console.error('Invoice error:', e);
-                    alert('Ошибка при открытии формы оплаты');
-                }
+            // Открываем URL через Telegram
+            this.telegram.openTelegramLink(paymentUrl);
+
+            // Добавляем обработчик возврата
+            this.telegram.onEvent('viewportChanged', () => {
+                console.log('Returned from payment');
+                // Здесь можно обновить статус после оплаты
             });
-            MainButton.show();
         } catch (error) {
             console.error('Payment error:', error);
             alert('Ошибка при оплате: ' + error.message + '\nВерсия: ' + this.telegram.version);

@@ -51,27 +51,35 @@ class InfluencerGame {
             initDataUnsafe: this.telegram.initDataUnsafe
         });
 
-        // Проверяем, что приложение открыто через бота
-        if (!this.telegram.initDataUnsafe?.user?.id) {
-            alert('Пожалуйста, откройте приложение через @influenc_bot');
-            return;
-        }
-
+        // Формат точно как в stars_manager.py
         const invoice = {
-            title: 'Вход в игру',
-            description: '50 Stars',
-            currency: 'XTR',
+            title: "Вход в игру Influencer",
+            description: "Единоразовый взнос для начала игры",
+            currency: "XTR",
             prices: [{
-                label: 'Вход',
+                label: "Вход",
                 amount: 5000
-            }]
+            }],
+            payload: JSON.stringify({
+                type: 'entry_payment'
+            }),
+            need_name: false,
+            need_phone_number: false,
+            need_email: false,
+            need_shipping_address: false,
+            send_phone_number_to_provider: false,
+            send_email_to_provider: false,
+            is_flexible: false
         };
 
         try {
-            await this.telegram.showPaymentForm(invoice);
+            console.log('Trying to show payment form with invoice:', invoice);
+            const result = await this.telegram.showPaymentForm(invoice);
+            console.log('Payment form result:', result);
         } catch (error) {
             console.error('Payment error:', error);
-            alert(error.message || 'Ошибка оплаты');
+            // Показываем полное сообщение об ошибке для отладки
+            alert(`Ошибка оплаты: ${error.message}`);
         }
     }
 }

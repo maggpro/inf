@@ -53,24 +53,51 @@ class InfluencerGame {
     }
 
     async requestEntryPayment() {
+        console.log('Payment request started');
+
+        // Создаем MainButton
+        const MainButton = window.Telegram.WebApp.MainButton;
+        MainButton.setText('Оплатить 50 Stars');
+        MainButton.show();
+
+        const invoice = {
+            title: "Вход в игру",
+            description: "50 Stars",
+            currency: "XTR",
+            prices: [{
+                label: "Вход",
+                amount: 5000
+            }]
+        };
+
         try {
-            // Формируем ссылку для оплаты Stars
-            const botUsername = 'influenc_bot';
-            const paymentUrl = `https://t.me/${botUsername}/start?startapp=buy_stars_50`;
+            console.log('Setting up payment...');
 
-            console.log('Opening payment link:', paymentUrl);
-
-            // Открываем ссылку внутри Telegram
-            window.Telegram.WebApp.openTelegramLink(paymentUrl);
-
-            // Добавляем обработчик возврата в приложение
-            window.Telegram.WebApp.onEvent('viewportChanged', () => {
-                console.log('Returned to app, checking payment status...');
-                // Здесь можно добавить проверку статуса платежа
+            // Добавляем обработчик нажатия на кнопку
+            MainButton.onClick(async () => {
+                try {
+                    console.log('Button clicked, showing payment form');
+                    const result = await window.Telegram.WebApp.showPopup({
+                        title: 'Оплата Stars',
+                        message: 'Подтвердите оплату 50 Stars',
+                        buttons: [{
+                            type: 'pay',
+                            text: 'Оплатить',
+                            params: invoice
+                        }]
+                    });
+                    console.log('Popup result:', result);
+                } catch (e) {
+                    console.error('Payment popup error:', e);
+                    alert('Ошибка при открытии формы оплаты: ' + e.message);
+                }
             });
+
+            console.log('Payment setup complete');
         } catch (error) {
-            console.error('Payment error:', error);
-            alert('Ошибка при открытии формы оплаты. Код: 02');
+            console.error('Payment setup error:', error);
+            MainButton.hide();
+            alert('Ошибка при настройке оплаты: ' + error.message);
         }
     }
 }

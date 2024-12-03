@@ -17,37 +17,30 @@ const db = admin.firestore();
 // Обработка платежей
 bot.on('pre_checkout_query', async (ctx) => {
     try {
+        console.log('Pre-checkout query:', ctx.preCheckoutQuery);
         await ctx.answerPreCheckoutQuery(true);
     } catch (error) {
         console.error('Pre-checkout error:', error);
+        await ctx.answerPreCheckoutQuery(false, 'Ошибка при обработке платежа');
     }
 });
 
 // Обработка успешных платежей
 bot.on('successful_payment', async (ctx) => {
-    const userId = ctx.from.id;
-    const userRef = db.collection('users').doc(String(userId));
-
     try {
-        await db.runTransaction(async (transaction) => {
-            const userDoc = await transaction.get(userRef);
-            const userData = userDoc.data() || { points: 0, stars: 0 };
+        console.log('Successful payment:', ctx.message.successful_payment);
+        const payment = ctx.message.successful_payment;
+        const payload = JSON.parse(payment.invoice_payload);
 
-            // Обновляем количество звезд и очков
-            const newStars = userData.stars + ctx.message.successful_payment.total_amount;
-            const newPoints = userData.points + ctx.message.successful_payment.total_amount;
-
-            transaction.set(userRef, {
-                ...userData,
-                stars: newStars,
-                points: newPoints
-            }, { merge: true });
-        });
-
-        await ctx.reply('Платеж успешно обработан! Ваши очки обновлены.');
+        if (payload.type === 'entry_payment') {
+            // Обработка входного платежа
+            await handleEntryPayment(ctx);
+        } else if (payload.type === 'stars_purchase') {
+            // Обработка покупки Stars
+            await handleStarsPurchase(ctx, payload);
+        }
     } catch (error) {
         console.error('Payment processing error:', error);
-        await ctx.reply('Произошла ошибка при обработке платежа.');
     }
 });
 

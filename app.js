@@ -16,6 +16,16 @@ class InfluencerGame {
         console.log('Game initializing...');
         this.telegram = window.Telegram.WebApp;
 
+        // Проверяем поддержку платежей
+        if (!this.telegram.isVersionAtLeast('6.1')) {
+            console.error('Payment support requires Telegram WebApp 6.1 or higher');
+        }
+
+        // Добавляем обработчики платежей
+        this.telegram.onEvent('mainButtonClicked', this.handleMainButtonClick.bind(this));
+        this.telegram.onEvent('invoiceClosed', this.handleInvoiceClosed.bind(this));
+        this.telegram.onEvent('popupClosed', this.handlePopupClosed.bind(this));
+
         // Применяем тему Telegram
         const theme = this.telegram.themeParams;
         console.log('Telegram theme:', theme);
@@ -31,9 +41,6 @@ class InfluencerGame {
         this.points = 0;
         this.referrals = [];
         this.stars = 0;
-
-        // Добавляем обработчики платежей
-        this.telegram.onEvent('invoiceClosed', this.handleInvoiceClosed.bind(this));
 
         // Проверяем реферальный параметр при запуске
         const startParam = new URLSearchParams(window.location.search).get('start_param');
@@ -284,35 +291,52 @@ class InfluencerGame {
     }
 
     async requestEntryPayment() {
+        if (!this.telegram.isVersionAtLeast('6.1')) {
+            alert('Для оплаты требуется обновить Telegram');
+            return;
+        }
+
         const invoice = {
             title: 'Вход в игру Influencer',
             description: '💫 Единоразовый взнос 50 Stars для начала игры',
             currency: 'XTR',
             prices: [{
                 label: '50 Stars',
-                amount: 5000
+                amount: 5000 // 50 Stars = 5000 (сумма в минимальных единицах)
             }],
             payload: JSON.stringify({
                 type: 'entry_payment',
                 referrerId: this.referrerId
             }),
-            provider_token: '',
             need_name: false,
             need_phone_number: false,
             need_email: false,
             need_shipping_address: false,
             send_phone_number_to_provider: false,
             send_email_to_provider: false,
-            is_flexible: false
+            is_flexible: false,
+            max_tip_amount: 0,
+            suggested_tip_amounts: []
         };
 
         try {
             console.log('Showing payment form:', invoice);
-            await this.telegram.showPaymentForm(invoice);
+            // Используем метод openInvoice вместо showPaymentForm
+            await this.telegram.openInvoice(invoice);
         } catch (error) {
             console.error('Entry payment error:', error);
             alert('Для начала игры необходимо оплатить вход. Убедитесь, что у вас есть Telegram Stars.');
         }
+    }
+
+    // Добавляем обработчик закрытия попапа
+    handlePopupClosed(event) {
+        console.log('Popup closed:', event);
+    }
+
+    // Обработчик нажатия главной кнопки
+    handleMainButtonClick() {
+        console.log('Main button clicked');
     }
 
     async handleInvoiceClosed(event) {

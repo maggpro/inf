@@ -51,19 +51,16 @@ class InfluencerGame {
             return;
         }
 
-        // Логируем все доступные методы
-        console.log('Available WebApp methods:', {
+        // Логируем информацию о WebApp
+        console.log('WebApp Info:', {
             version: window.Telegram.WebApp.version,
-            platform: window.Telegram.WebApp.platform,
-            methods: Object.keys(window.Telegram.WebApp),
-            paymentMethods: window.Telegram.WebApp.showPaymentForm ? 'Available' : 'Not available'
+            platform: window.Telegram.WebApp.platform
         });
 
-        // Проверяем версию
-        if (parseFloat(window.Telegram.WebApp.version) < 6.1) {
-            alert('Требуется Telegram версии 6.1 или выше');
-            return;
-        }
+        // Используем MainButton для открытия формы оплаты
+        const MainButton = window.Telegram.WebApp.MainButton;
+        MainButton.setText('Оплатить 50 Stars');
+        MainButton.show();
 
         const invoice = {
             title: "Вход в игру",
@@ -76,15 +73,15 @@ class InfluencerGame {
         };
 
         try {
-            // Пробуем получить метод оплаты
-            const paymentForm = window.Telegram.WebApp.showPaymentForm;
-            if (typeof paymentForm !== 'function') {
-                throw new Error('Payment method not available');
-            }
-
-            console.log('Showing payment form with:', invoice);
-            const result = await paymentForm(invoice);
-            console.log('Payment result:', result);
+            MainButton.onClick(async () => {
+                try {
+                    // Пробуем открыть форму оплаты через popupParams
+                    window.Telegram.WebApp.openInvoice(JSON.stringify(invoice));
+                } catch (e) {
+                    console.error('Invoice error:', e);
+                    alert('Ошибка при открытии формы оплаты');
+                }
+            });
         } catch (error) {
             console.error('Payment error:', error);
             alert('Ошибка: ' + error.message);

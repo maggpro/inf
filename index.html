@@ -11,90 +11,35 @@
     <div id="app">
         <!-- Основной контент -->
         <div id="content">
-            <!-- Экран оплаты (показывается для новых пользователей) -->
+            <!-- Экран оплаты -->
             <div id="payment-screen" class="payment-screen">
                 <h2>Добро пожаловать в INF Game!</h2>
-                <p>Для начала игры необходимо отправить 1 Star</p>
+                <p>Для начала игры необходимо отправить 50 Stars</p>
                 <button id="sendStarButton" class="payment-button">
-                    Отправить 1 ⭐️
+                    Отправить 50 ⭐️
                 </button>
             </div>
 
-            <!-- Игровой интерфейс (показывается после оплаты) -->
+            <!-- Игровой интерфейс -->
             <div id="game-interface" class="game-interface hidden">
                 <!-- Вкладка Игра -->
                 <div class="tab-content active" id="game">
-                    <div class="balance-block">
-                        <div class="balance-item">
-                            <h3>Stars</h3>
-                            <p><span id="starsBalance">0</span> ⭐️</p>
-                        </div>
-                        <div class="balance-item">
-                            <h3>INF</h3>
-                            <p><span id="infBalance">0</span> 💎</p>
-                        </div>
+                    <div class="inf-balance">
+                        <h1>Ваш баланс</h1>
+                        <div class="balance-amount"><span id="infBalance">0</span> INF</div>
                     </div>
 
                     <div class="click-block">
                         <button id="clickButton" class="click-button">
-                            Нажми для Stars
+                            Получить INF
                             <span id="timer" class="timer"></span>
                         </button>
-                        <p class="click-info">Получите <span class="stars-per-click">1</span> Stars за клик</p>
                     </div>
 
-                    <div class="stats-block">
-                        <h3>Статистика</h3>
-                        <p>Реферальный код: <span id="referralCode">-</span></p>
-                        <p>Stars за все время: <span id="totalStars">0</span></p>
-                        <p>INF за все время: <span id="totalInf">0</span></p>
-                    </div>
-                </div>
-
-                <!-- Вкладка Магазин -->
-                <div class="tab-content" id="shop">
-                    <div class="shop-items">
-                        <div class="shop-item">
-                            <h3>50 Stars ➝ 50 INF</h3>
-                            <p class="discount">Бонус: 0%</p>
-                            <button class="buy-button" data-stars="50" data-inf="50">
-                                Купить за 50 ⭐️
-                            </button>
-                        </div>
-                        <div class="shop-item">
-                            <h3>100 Stars ➝ 105 INF</h3>
-                            <p class="discount">Бонус: +5%</p>
-                            <button class="buy-button" data-stars="100" data-inf="105">
-                                Купить за 100 ⭐️
-                            </button>
-                        </div>
-                        <div class="shop-item">
-                            <h3>150 Stars ➝ 165 INF</h3>
-                            <p class="discount">Бонус: +10%</p>
-                            <button class="buy-button" data-stars="150" data-inf="165">
-                                Купить за 150 ⭐️
-                            </button>
-                        </div>
-                        <div class="shop-item">
-                            <h3>500 Stars ➝ 575 INF</h3>
-                            <p class="discount">Бонус: +15%</p>
-                            <button class="buy-button" data-stars="500" data-inf="575">
-                                Купить за 500 ⭐️
-                            </button>
-                        </div>
-                        <div class="shop-item">
-                            <h3>1000 Stars ➝ 1200 INF</h3>
-                            <p class="discount">Бонус: +20%</p>
-                            <button class="buy-button" data-stars="1000" data-inf="1200">
-                                Купить за 1000 ⭐️
-                            </button>
-                        </div>
-                        <div class="shop-item">
-                            <h3>5000 Stars ➝ 6250 INF</h3>
-                            <p class="discount">Бонус: +25%</p>
-                            <button class="buy-button" data-stars="5000" data-inf="6250">
-                                Купить за 5000 ⭐️
-                            </button>
+                    <div class="transactions-list">
+                        <h3>История начислений</h3>
+                        <div id="transactionsList" class="transactions">
+                            <!-- Транзакции добавляются динамически -->
                         </div>
                     </div>
                 </div>
@@ -102,7 +47,7 @@
                 <!-- Вкладка Рейтинг -->
                 <div class="tab-content" id="rating">
                     <div class="leaderboard">
-                        <h2>Топ по INF</h2>
+                        <h2>Топ игроков по INF</h2>
                         <table>
                             <thead>
                                 <tr>
@@ -116,6 +61,55 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Вкладка Друзья -->
+                <div class="tab-content" id="friends">
+                    <div class="referral-section">
+                        <h2>Приглашайте друзей</h2>
+                        <p>Получайте 10 INF за каждого друга, который начнет игру</p>
+                        <div class="referral-code">
+                            <p>Ваша реферальная ссылка:</p>
+                            <div class="code-block">
+                                <span id="referralLink">Loading...</span>
+                                <button id="copyButton" class="copy-button">Копировать</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="friends-list">
+                        <h3>Ваши друзья</h3>
+                        <div id="friendsList">
+                            <!-- Список друзей добавляется динамически -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вкладка О игре -->
+                <div class="tab-content" id="about">
+                    <div class="about-content">
+                        <h2>О игре</h2>
+                        <div class="rules">
+                            <h3>Правила игры:</h3>
+                            <ul>
+                                <li>Для начала игры необходимо отправить 50 Stars</li>
+                                <li>Каждые 50 секунд можно получать INF нажатием на кнопку</li>
+                                <li>Приглашайте друзей и получайте 10 INF за каждого</li>
+                                <li>Покупайте INF за Stars с бонусами до 25%</li>
+                            </ul>
+                        </div>
+                        <div class="star-packages">
+                            <h3>Пакеты Stars:</h3>
+                            <ul>
+                                <li>50 Stars ➝ 50 INF</li>
+                                <li>100 Stars ➝ 105 INF (+5%)</li>
+                                <li>150 Stars ➝ 165 INF (+10%)</li>
+                                <li>500 Stars ➝ 575 INF (+15%)</li>
+                                <li>1000 Stars ➝ 1200 INF (+20%)</li>
+                                <li>5000+ Stars ➝ (+25%)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -124,11 +118,14 @@
             <button class="tab-button active" data-tab="game">
                 🎮<br>Игра
             </button>
-            <button class="tab-button" data-tab="shop">
-                🏪<br>Магазин
-            </button>
             <button class="tab-button" data-tab="rating">
                 🏆<br>Рейтинг
+            </button>
+            <button class="tab-button" data-tab="friends">
+                👥<br>Друзья
+            </button>
+            <button class="tab-button" data-tab="about">
+                ℹ️<br>О игре
             </button>
         </div>
     </div>

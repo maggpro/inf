@@ -4,14 +4,27 @@
     --tg-theme-button-color: #2196f3;
     --tg-theme-button-text-color: #ffffff;
     --tg-theme-secondary-bg-color: #f1f1f1;
+
+    /* Градиентные цвета */
+    --gradient-primary: linear-gradient(45deg, #2193b0, #6dd5ed);
+    --gradient-secondary: linear-gradient(135deg, #667eea, #764ba2);
+    --gradient-accent: linear-gradient(45deg, #ee0979, #ff6a00);
+    --gradient-success: linear-gradient(45deg, #00b09b, #96c93d);
 }
 
 body {
-    background-color: var(--tg-theme-bg-color);
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
     color: var(--tg-theme-text-color);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
     padding: 16px;
+}
+
+/* Анимация градиента */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 /* Tabs */
@@ -53,9 +66,14 @@ body {
     display: flex;
     justify-content: space-around;
     margin-bottom: 20px;
-    background: var(--tg-theme-secondary-bg-color);
-    padding: 20px;
-    border-radius: 12px;
+    background: var(--gradient-primary);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    color: white;
 }
 
 .balance-item {
@@ -64,13 +82,15 @@ body {
 
 .balance-item h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: 18px;
+    opacity: 0.9;
 }
 
 .balance-item p {
-    margin: 5px 0 0;
-    font-size: 24px;
+    margin: 10px 0 0;
+    font-size: 32px;
     font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* Click Block */
@@ -84,17 +104,26 @@ body {
     height: 200px;
     border-radius: 50%;
     border: none;
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-    font-size: 20px;
+    background: var(--gradient-accent);
+    background-size: 200% 200%;
+    animation: gradientShift 10s ease infinite;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 10px 20px rgba(238, 9, 121, 0.2);
+}
+
+.click-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 5px 10px rgba(238, 9, 121, 0.2);
 }
 
 .click-button:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+    animation: none;
 }
 
 .timer {
@@ -114,17 +143,28 @@ body {
 }
 
 .shop-item {
-    background: var(--tg-theme-secondary-bg-color);
-    padding: 20px;
-    border-radius: 12px;
+    background: var(--gradient-secondary);
+    background-size: 200% 200%;
+    animation: gradientShift 20s ease infinite;
+    padding: 25px;
+    border-radius: 15px;
+    color: white;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
     text-align: center;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
+.shop-item:hover {
+    transform: translateY(-5px);
+}
+
 .shop-item h3 {
-    margin: 0 0 10px;
+    margin: 0;
+    font-size: 20px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .discount {
@@ -134,15 +174,21 @@ body {
 }
 
 .buy-button {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-    border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    cursor: pointer;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    padding: 12px 25px;
+    border-radius: 25px;
     font-size: 16px;
-    margin-top: 15px;
-    transition: opacity 0.3s;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    backdrop-filter: blur(5px);
+}
+
+.buy-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
 }
 
 .buy-button:disabled {
@@ -152,38 +198,67 @@ body {
 
 /* Leaderboard */
 .leaderboard {
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 12px;
-    padding: 20px;
+    background: var(--gradient-primary);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+    padding: 25px;
+    border-radius: 20px;
+    color: white;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
 
 .leaderboard table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0 8px;
 }
 
-.leaderboard th,
-.leaderboard td {
-    padding: 10px;
+.leaderboard th {
+    padding: 15px;
     text-align: left;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.leaderboard td {
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.leaderboard tr:hover td {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* Экран оплаты */
 .payment-screen {
-    text-align: center;
+    background: var(--gradient-primary);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
     padding: 40px 20px;
+    border-radius: 20px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
 
 .payment-button {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.4);
     padding: 15px 30px;
-    border-radius: 8px;
+    border-radius: 25px;
     font-size: 18px;
+    font-weight: bold;
     cursor: pointer;
+    transition: all 0.3s;
+    backdrop-filter: blur(5px);
     margin-top: 20px;
+}
+
+.payment-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
 }
 
 .hidden {
@@ -197,9 +272,13 @@ body {
     left: 0;
     right: 0;
     display: flex;
-    background: var(--tg-theme-bg-color);
-    border-top: 1px solid var(--tg-theme-secondary-bg-color);
-    padding: 8px;
+    background: var(--gradient-secondary);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+    padding: 12px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
 }
 
 .bottom-tabs .tab-button {
@@ -208,9 +287,17 @@ body {
     font-size: 12px;
     line-height: 1.2;
     text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.3s;
 }
 
-/* Отступ для контента, чтобы не перекрывался нижней навигац��ей */
+.bottom-tabs .tab-button.active {
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+}
+
+/* Отступ для контента, чтобы не перекрывался нижней навигацией */
 #content {
     padding-bottom: 70px;
 }

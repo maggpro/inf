@@ -35,6 +35,38 @@ interface PaymentForm {
     url: string;
 }
 
+// Добавим интерфейсы для Stars
+interface StarsInvoice {
+    title: string;
+    description: string;
+    amount: number;
+    currency: string;
+}
+
+interface StarsForm {
+    form_id: string;
+    bot_id?: number;
+    title: string;
+    description: string;
+    invoice: {
+        currency: string;
+        amount: number;
+    }
+}
+
+// Интерфейсы для работы со Stars
+interface StarsTransaction {
+    amount: number;
+    currency: string;
+    message: string;
+}
+
+interface WebAppStarsRequest {
+    method: 'sendStarsForm';
+    form_id: string;
+    invoice: StarsInvoice;
+}
+
 export class Bot {
     private payments: PaymentsHandler;
 
@@ -80,9 +112,58 @@ export class Bot {
                         }
                     });
                 }
+
+                if (message?.web_app_data?.data) {
+                    const data = JSON.parse(message.web_app_data.data) as WebAppStarsRequest;
+
+                    if (data.method === 'sendStarsForm') {
+                        // Создаем форму оплаты Stars
+                        const starsForm: StarsForm = {
+                            form_id: data.form_id,
+                            bot_id: ctx.botInfo.id,
+                            title: data.invoice.title,
+                            description: data.invoice.description,
+                            invoice: {
+                                currency: 'STAR',
+                                amount: data.invoice.amount
+                            }
+                        };
+
+                        // Отправляем форму оплаты Stars
+                        await ctx.telegram.callApi('payments.sendStarsForm', {
+                            form: starsForm
+                        });
+                    }
+                }
+
+                // Проверяем успешную оплату Stars
+                if (message.stars_transaction) {
+                    const transaction = message.stars_transaction as StarsTransaction;
+                    const userId = ctx.from.id;
+
+                    if (transaction.amount === 1 && transaction.currency === 'STAR') {
+                        await this.db.updateUserPaid(userId, true);
+                        await this.db.addInfToUser(userId, 1);
+
+                        await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Вам начислен 1 INF.');
+
+                        await ctx.reply('Нажмите кнопку ниже, чтобы начать играть:', {
+                            reply_markup: {
+                                inline_keyboard: [[
+                                    {
+                                        text: '🎮 Играть',
+                                        web_app: {
+                                            url: `https://maggpro.github.io/inf/?v=${Date.now()}`
+                                        }
+                                    }
+                                ]]
+                            }
+                        });
+                    }
+                }
             } catch (error) {
-                console.error('Error handling stars:', error);
-                await ctx.reply('Произошла ошибка при обработке Stars. Пожалуйста, попробуйте позже.');
+                console.error('Error handling stars payment:', error);
+                await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
             }
         });
 
@@ -161,7 +242,7 @@ export class Bot {
                 });
                 await this.payments.handleInitialPayment(userId);
             } else {
-                console.log(`Существующий пользователь ${username} вернулся`);
+                console.log(`Существ��ющий пользователь ${username} вернулся`);
                 await ctx.reply(`С возвращением! Ваш баланс: ${user.inf_balance} INF`, {
                     reply_markup: {
                         inline_keyboard: [[
@@ -195,7 +276,7 @@ export class Bot {
 
             if (payment.invoice_payload.startsWith('initial_payment_')) {
                 await this.db.updateUserPaid(userId, true);
-                await ctx.reply('Спасибо за оплату! Теперь ы можете наать игру.');
+                await ctx.reply('Спасибо за оплату! Теперь ы можете наать игр.');
             } else if (payment.invoice_payload.startsWith('stars_purchase_')) {
                 const [, , , stars] = payment.invoice_payload.split('_');
                 await this.db.addInfToUser(userId, Number(stars));

@@ -31,20 +31,17 @@ async function checkPayment() {
 
 // Обработчик кнопки отправки Star
 document.getElementById('sendStarButton').addEventListener('click', () => {
-    // Создаем прямую ссылку для отправки Stars
-    const starsUrl = `tg://stars/send?amount=1&message=${encodeURIComponent('Оплата за вход в INF Game')}`;
-
-    // Открываем форму отправки Stars
-    window.location.href = starsUrl;
-
-    // Показываем инструкцию
-    tg.showPopup({
-        title: 'Отправка Star',
-        message: 'После отправки Star игра автоматически станет доступна',
-        buttons: [{
-            type: 'close'
-        }]
-    });
+    // Отправляем команду для создания формы оплаты Stars
+    tg.sendData(JSON.stringify({
+        method: 'sendStarsForm',
+        form_id: Date.now().toString(),
+        invoice: {
+            title: 'Вход в INF Game',
+            description: 'Оплата 1 Star для начала игры',
+            amount: 1,
+            currency: 'STAR'
+        }
+    }));
 });
 
 // Обработка покупок в магазине
@@ -71,7 +68,7 @@ document.querySelectorAll('.buy-button').forEach(button => {
                     // Открываем форму для отправки Stars
                     tg.sendMessage(`/send_stars ${stars}`);
 
-                    // После успешной отправки Stars сервер обновит баланс
+                    // После успе��ной отправки Stars сервер обновит баланс
                     // и мы обновим интерфейс
                     setTimeout(loadUserData, 3000);
                 }
@@ -101,7 +98,7 @@ async function loadUserData() {
         document.getElementById('totalStars').textContent = user.total_stars || '0';
         document.getElementById('totalInf').textContent = user.total_inf || '0';
 
-        // Проверяем возможность покупки для каждой кнопки
+        // Проверяем возможность покупки для каждой кн��пки
         document.querySelectorAll('.buy-button').forEach(button => {
             const requiredStars = parseInt(button.dataset.stars);
             button.disabled = user.stars_balance < requiredStars;

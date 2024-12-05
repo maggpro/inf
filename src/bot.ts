@@ -99,6 +99,22 @@ export class Bot {
             try {
                 const message = ctx.message;
 
+                if (message?.web_app_data?.data) {
+                    const data = JSON.parse(message.web_app_data.data);
+
+                    if (data.method === 'send_star') {
+                        // Отправляем кнопку для отправки Star
+                        await ctx.reply('Для начала игры отправьте Star:', {
+                            reply_markup: {
+                                inline_keyboard: [[{
+                                    text: '💫 Отправить 1 Star',
+                                    url: `tg://stars/send?amount=${data.amount}&message=${encodeURIComponent(data.message)}`
+                                }]]
+                            }
+                        });
+                    }
+                }
+
                 // Проверяем получение Stars
                 if (message.via_bot?.is_bot && message.forward_date) {
                     const userId = ctx.from.id;
@@ -111,54 +127,6 @@ export class Bot {
                     await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Вам начислен 1 INF.');
 
                     // Отправляем кнопку для входа в игру
-                    await ctx.reply('Нажмите кнопку ниже, чтобы начать играть:', {
-                        reply_markup: {
-                            inline_keyboard: [[
-                                {
-                                    text: '🎮 Играть',
-                                    web_app: {
-                                        url: `https://maggpro.github.io/inf/?v=${Date.now()}`
-                                    }
-                                }
-                            ]]
-                        }
-                    });
-                }
-
-                if (message?.web_app_data?.data) {
-                    const data = JSON.parse(message.web_app_data.data) as StarsPaymentRequest;
-
-                    if (data.method === 'createStarsPayment') {
-                        // Создаем форму для оплаты Stars
-                        const paymentForm = {
-                            flags: 0,
-                            form_id: Date.now().toString(),
-                            bot_id: ctx.botInfo.id,
-                            title: data.params.title,
-                            description: data.params.description,
-                            photo: data.params.photo_url,
-                            invoice: {
-                                currency: data.params.currency,
-                                amount: data.params.amount,
-                                payload: data.params.payload
-                            }
-                        };
-
-                        // Отправляем форму оплаты
-                        await ctx.telegram.callApi('payments.createStarsPayment', {
-                            form: paymentForm
-                        });
-                    }
-                }
-
-                // Проверяем успешную оплату Stars
-                if (message.stars_transaction) {
-                    const userId = ctx.from.id;
-                    await this.db.updateUserPaid(userId, true);
-                    await this.db.addInfToUser(userId, 1);
-
-                    await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Вам начислен 1 INF.');
-
                     await ctx.reply('Нажмите кнопку ниже, чтобы начать играть:', {
                         reply_markup: {
                             inline_keyboard: [[

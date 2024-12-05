@@ -31,34 +31,19 @@ async function checkPayment() {
 
 // Обработчик кнопки отправки Star
 document.getElementById('sendStarButton').addEventListener('click', () => {
-    tg.showPopup({
-        title: 'Отправка Star',
-        message: 'Для начала игры необходимо отправить 1 Star. Продолжить?',
-        buttons: [{
-            type: 'default',
-            text: 'Отправить Star',
-            id: 'send_star'
-        }, {
-            type: 'cancel',
-            text: 'Отмена'
-        }]
-    }, (buttonId) => {
-        if (buttonId === 'send_star') {
-            // Создаем URL для отправки Stars
-            const starsUrl = `tg://stars/send?amount=1&message=${encodeURIComponent('Оплата за вход в INF Game')}`;
+    // Создаем URL для отправки Stars
+    const starsUrl = `tg://stars/send?amount=1&message=${encodeURIComponent('Оплата за вход в INF Game')}`;
 
-            // Открываем окно отправки Stars
-            window.location.href = starsUrl;
-
-            // Уведомляем пользователя
-            tg.showPopup({
-                title: 'Отправка Star',
-                message: 'После отправки Star игра автоматически станет доступна',
-                buttons: [{
-                    type: 'close'
-                }]
-            });
-        }
+    // Настраиваем MainButton
+    tg.MainButton.setText('Отправить 1 Star');
+    tg.MainButton.show();
+    tg.MainButton.onClick(() => {
+        // Отправляем команду боту
+        tg.sendData(JSON.stringify({
+            method: 'send_star',
+            amount: 1,
+            message: 'Оплата за вход в INF Game'
+        }));
     });
 });
 

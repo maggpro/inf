@@ -63,7 +63,7 @@ export class Bot {
                     await this.db.updateUserPaid(userId, true);
                     await this.db.addInfToUser(userId, 1);
 
-                    // Отправляем подтверждени��
+                    // Отправляем подтверждение
                     await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Вам начислен 1 INF.');
 
                     // Отправляем кнопку для входа в игру
@@ -155,22 +155,22 @@ export class Bot {
         // Обработчик нажатия на кнопку оплаты
         this.bot.action('pay_stars', async (ctx) => {
             try {
-                const paymentForm = ctx.session.paymentForm;
-                if (!paymentForm) {
-                    throw new Error('Payment form not found');
-                }
+                // Используем answerCbQuery вместо answerCallbackQuery
+                await ctx.answerCbQuery();
 
-                // Отправляем запрос на оплату Stars
-                await ctx.answerCallbackQuery();
-                await ctx.telegram.sendMessage(ctx.from.id,
-                    'Для оплаты перейдите по ссылке и отправьте Star:', {
+                // Отправляем прямую ссылку для отправки Stars
+                await ctx.reply('Для оплаты отправьте Star:', {
                     reply_markup: {
                         inline_keyboard: [[{
-                            text: '💫 Отправить Star',
+                            text: '💫 Отправить 1 Star',
                             url: `tg://stars/send?amount=1&message=${encodeURIComponent('Оплата за вход в INF Game')}`
                         }]]
                     }
                 });
+
+                // Добавляем инструкцию
+                await ctx.reply('После отправки Star, перешлите сообщение от @donate в этот чат');
+
             } catch (error) {
                 console.error('Error processing payment:', error);
                 await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
@@ -231,7 +231,7 @@ export class Bot {
 
             if (payment.invoice_payload.startsWith('initial_payment_')) {
                 await this.db.updateUserPaid(userId, true);
-                await ctx.reply('Спасибо за оплату! Теперь вы можете на��ать игру.');
+                await ctx.reply('Спасибо за оплату! Теперь вы можете наать игру.');
             } else if (payment.invoice_payload.startsWith('stars_purchase_')) {
                 const [, , , stars] = payment.invoice_payload.split('_');
                 await this.db.addInfToUser(userId, Number(stars));

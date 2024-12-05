@@ -39,27 +39,18 @@ export class Bot {
             try {
                 const message = ctx.message;
 
-                if (message?.web_app_data?.data) {
-                    const data = JSON.parse(message.web_app_data.data);
-
-                    if (data.method === 'requestStars') {
-                        await ctx.reply(`Для начала игры отправьте ${data.stars} Star`, {
-                            reply_markup: {
-                                inline_keyboard: [[
-                                    { text: `Отправить ${data.stars} ⭐️`, url: `tg://stars/send?amount=${data.stars}&message=${encodeURIComponent(data.message)}` }
-                                ]]
-                            }
-                        });
-                    }
-                }
-
+                // Проверяем, что это пересланное сообщение от @donate
                 if (message.forward_from?.username === 'donate' && message.forward_date) {
                     const userId = ctx.from.id;
+
+                    // Активируем аккаунт и начисляем INF
                     await this.db.updateUserPaid(userId, true);
                     await this.db.addInfToUser(userId, 1);
 
+                    // Отправляем подтверждение
                     await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Вам начислен 1 INF.');
 
+                    // Отправляем кнопку для входа в игру
                     await ctx.reply('Нажмите кнопку ниже, чтобы начать играть:', {
                         reply_markup: {
                             inline_keyboard: [[
@@ -73,9 +64,18 @@ export class Bot {
                         }
                     });
                 }
+
+                // Обработка других сообщений от веб-приложения
+                if (message?.web_app_data?.data) {
+                    const data = JSON.parse(message.web_app_data.data);
+
+                    if (data.method === 'starPaymentStarted') {
+                        await ctx.reply(`Для начала игры перешлите сюда сообщение об отправке ${data.amount} Star от @donate`);
+                    }
+                }
             } catch (error) {
-                console.error('Error handling stars:', error);
-                await ctx.reply('Произошла ошибка при обработке Stars. Пожалуйста, попробуйте позже.');
+                console.error('Error handling message:', error);
+                await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
             }
         });
 

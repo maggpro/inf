@@ -19,6 +19,22 @@ interface WebAppContext extends Context {
     };
 }
 
+// Добавим новые интерфейсы для платежей
+interface PaymentForm {
+    form_id: string;
+    bot_id: number;
+    title: string;
+    description: string;
+    invoice: {
+        currency: string;
+        amount: number;
+        native_currency: string;
+        native_amount: number;
+    };
+    provider_id: number;
+    url: string;
+}
+
 export class Bot {
     private payments: PaymentsHandler;
 
@@ -47,7 +63,7 @@ export class Bot {
                     await this.db.updateUserPaid(userId, true);
                     await this.db.addInfToUser(userId, 1);
 
-                    // Отправляем подтверждение
+                    // Отправляем подтверждени��
                     await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Вам начислен 1 INF.');
 
                     // Отправляем кнопку для входа в игру
@@ -70,7 +86,34 @@ export class Bot {
                     const data = JSON.parse(message.web_app_data.data);
 
                     if (data.method === 'starPaymentStarted') {
-                        await ctx.reply(`Для начала игры перешлите сюда сообщение об отправке ${data.amount} Star от @donate`);
+                        // Создаем платежную форму для Stars
+                        const paymentForm: PaymentForm = {
+                            form_id: Date.now().toString(),
+                            bot_id: ctx.botInfo.id,
+                            title: "Вход в INF Game",
+                            description: "Оплата 1 Star для начала игры",
+                            invoice: {
+                                currency: "XTR",
+                                amount: 100, // 1 Star = 100
+                                native_currency: "STAR",
+                                native_amount: 1
+                            },
+                            provider_id: Number(process.env.PROVIDER_ID), // ID провайдера Stars
+                            url: "https://t.me/donate" // URL для оплаты Stars
+                        };
+
+                        // Отправляем форму оплаты
+                        await ctx.reply('Для начала игры отправьте Star:', {
+                            reply_markup: {
+                                inline_keyboard: [[{
+                                    text: '💫 Отправить 1 Star',
+                                    callback_data: 'pay_stars'
+                                }]]
+                            }
+                        });
+
+                        // Сохраняем форму в контексте для последующей обработки
+                        ctx.session.paymentForm = paymentForm;
                     }
                 }
             } catch (error) {
@@ -106,6 +149,31 @@ export class Bot {
             } catch (error) {
                 console.error('Error handling successful payment:', error);
                 await ctx.reply('Произошла ошибка при обработке платежа');
+            }
+        });
+
+        // Обработчик нажатия на кнопку оплаты
+        this.bot.action('pay_stars', async (ctx) => {
+            try {
+                const paymentForm = ctx.session.paymentForm;
+                if (!paymentForm) {
+                    throw new Error('Payment form not found');
+                }
+
+                // Отправляем запрос на оплату Stars
+                await ctx.answerCallbackQuery();
+                await ctx.telegram.sendMessage(ctx.from.id,
+                    'Для оплаты перейдите по ссылке и отправьте Star:', {
+                    reply_markup: {
+                        inline_keyboard: [[{
+                            text: '💫 Отправить Star',
+                            url: `tg://stars/send?amount=1&message=${encodeURIComponent('Оплата за вход в INF Game')}`
+                        }]]
+                    }
+                });
+            } catch (error) {
+                console.error('Error processing payment:', error);
+                await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
             }
         });
     }
@@ -163,7 +231,7 @@ export class Bot {
 
             if (payment.invoice_payload.startsWith('initial_payment_')) {
                 await this.db.updateUserPaid(userId, true);
-                await ctx.reply('Спасибо за оплату! Теперь вы можете начать игру.');
+                await ctx.reply('Спасибо за оплату! Теперь вы можете на��ать игру.');
             } else if (payment.invoice_payload.startsWith('stars_purchase_')) {
                 const [, , , stars] = payment.invoice_payload.split('_');
                 await this.db.addInfToUser(userId, Number(stars));

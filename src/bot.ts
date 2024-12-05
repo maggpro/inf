@@ -102,4 +102,22 @@ export class Bot {
             await ctx.reply('Произошла ошибка при обработке платежа. Пожалуйста, свяжитесь с поддержкой.');
         }
     }
+
+    private async handlePayment(ctx: any) {
+        try {
+            const userId = ctx.from.id;
+            const payment = ctx.message.successful_payment;
+
+            if (payment.currency === 'XTR') { // Проверяем что это оплата Stars
+                if (payment.payload === 'initial_payment') {
+                    // Активируем аккаунт пользователя
+                    await this.db.updateUserPaid(userId, true);
+                    await ctx.reply('Спасибо за оплату! Теперь вы можете начать игру.');
+                }
+            }
+        } catch (error) {
+            console.error('Error handling payment:', error);
+            await ctx.reply('Произошла ошибка при обработке платежа. Пожалуйста, свяжитесь с поддержкой.');
+        }
+    }
 }

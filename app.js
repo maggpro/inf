@@ -33,19 +33,34 @@ async function checkPayment() {
 document.getElementById('sendStarButton').addEventListener('click', () => {
     tg.showPopup({
         title: 'Начало игры',
-        message: 'Для начала игры необходимо отправить 50 Stars. Продолжить?',
+        message: 'Для начала игры необходимо отправить 1 Star. Продолжить?',
         buttons: [{
             type: 'default',
-            text: 'Отправить Stars',
-            id: 'send_initial_stars'
+            text: 'Отправить Star',
+            id: 'send_initial_star'
         }, {
             type: 'cancel',
             text: 'Отмена'
         }]
     }, (buttonId) => {
-        if (buttonId === 'send_initial_stars') {
-            // Отправляем команду боту для начальной оплаты
-            tg.sendData('initial_payment_50_stars');
+        if (buttonId === 'send_initial_star') {
+            // Создаем invoice для оплаты 1 Star
+            const invoice = {
+                title: "Начало игры INF Game",
+                description: "Оплата 1 Star для начала игры",
+                currency: "XTR",
+                prices: [{
+                    label: "Вход в игру",
+                    amount: 100 // 1 Star = 100 (минимальная сумма)
+                }],
+                payload: "initial_payment"
+            };
+
+            // Отправляем запрос на создание счета
+            tg.sendData(JSON.stringify({
+                type: "invoice",
+                ...invoice
+            }));
         }
     });
 });

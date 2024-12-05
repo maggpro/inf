@@ -83,14 +83,15 @@ export class Bot {
 
                 if (payment.currency === 'XTR' && payment.invoice_payload === 'initial_payment') {
                     await this.db.updateUserPaid(userId, true);
-                    await ctx.reply('Спасибо за Star! Теперь вы можете начать игру.');
+                    await this.db.addInfToUser(userId, 1);
 
-                    await ctx.answerWebAppQuery(payment.telegram_payment_charge_id, {
-                        type: 'article',
-                        id: payment.telegram_payment_charge_id,
-                        title: 'Успешная оплата',
-                        input_message_content: {
-                            message_text: 'Оплата прошла успешно! Теперь вы можете начать игру.'
+                    await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Вам начислен 1 INF.');
+
+                    await ctx.reply('Нажмите кнопку ниже, чтобы начать играть:', {
+                        reply_markup: {
+                            inline_keyboard: [[
+                                { text: '🎮 Играть', web_app: { url: 'https://maggpro.github.io/inf/' } }
+                            ]]
                         }
                     });
                 }

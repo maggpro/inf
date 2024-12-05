@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INF Game</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <div class="game-container">
+            <div class="balance">
+                <h2>Ваш баланс</h2>
+                <h1><span id="balance">0</span> INF</h1>
+            </div>
+
+            <button id="clickButton" class="click-button">
+                Click for INF
+                <span id="timer" class="timer"></span>
+            </button>
+
+            <div class="stats">
+                <h3>Статистика</h3>
+                <p>Реферальный код: <span id="referralCode">-</span></p>
+                <p>Аккаунт создан: <span id="createdAt">-</span></p>
+            </div>
+        </div>
+
+        <div class="leaderboard">
+            <h2>Топ игроков</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Место</th>
+                        <th>Имя</th>
+                        <th>INF</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

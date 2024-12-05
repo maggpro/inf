@@ -33,11 +33,12 @@ async function checkPayment() {
 document.getElementById('sendStarButton').addEventListener('click', () => {
     // Отправляем команду для создания формы оплаты Stars
     tg.sendData(JSON.stringify({
-        method: 'sendStarsForm',
-        form_id: Date.now().toString(),
-        invoice: {
+        method: 'createStarsPayment',
+        params: {
             title: 'Вход в INF Game',
             description: 'Оплата 1 Star для начала игры',
+            photo_url: null,
+            payload: 'initial_payment',
             amount: 1,
             currency: 'STAR'
         }
@@ -68,7 +69,7 @@ document.querySelectorAll('.buy-button').forEach(button => {
                     // Открываем форму для отправки Stars
                     tg.sendMessage(`/send_stars ${stars}`);
 
-                    // После успе��ной отправки Stars сервер обновит баланс
+                    // После успеной отправки Stars сервер обновит баланс
                     // и мы обновим интерфейс
                     setTimeout(loadUserData, 3000);
                 }
@@ -98,7 +99,7 @@ async function loadUserData() {
         document.getElementById('totalStars').textContent = user.total_stars || '0';
         document.getElementById('totalInf').textContent = user.total_inf || '0';
 
-        // Проверяем возможность покупки для каждой кн��пки
+        // Проверяем возможность покупки для к��ждой кнпки
         document.querySelectorAll('.buy-button').forEach(button => {
             const requiredStars = parseInt(button.dataset.stars);
             button.disabled = user.stars_balance < requiredStars;

@@ -67,6 +67,18 @@ interface WebAppStarsRequest {
     invoice: StarsInvoice;
 }
 
+interface StarsPaymentRequest {
+    method: 'createStarsPayment';
+    params: {
+        title: string;
+        description: string;
+        photo_url: string | null;
+        payload: string;
+        amount: number;
+        currency: string;
+    }
+}
+
 export class Bot {
     private payments: PaymentsHandler;
 
@@ -114,52 +126,51 @@ export class Bot {
                 }
 
                 if (message?.web_app_data?.data) {
-                    const data = JSON.parse(message.web_app_data.data) as WebAppStarsRequest;
+                    const data = JSON.parse(message.web_app_data.data) as StarsPaymentRequest;
 
-                    if (data.method === 'sendStarsForm') {
-                        // Создаем форму оплаты Stars
-                        const starsForm: StarsForm = {
-                            form_id: data.form_id,
+                    if (data.method === 'createStarsPayment') {
+                        // Создаем форму для оплаты Stars
+                        const paymentForm = {
+                            flags: 0,
+                            form_id: Date.now().toString(),
                             bot_id: ctx.botInfo.id,
-                            title: data.invoice.title,
-                            description: data.invoice.description,
+                            title: data.params.title,
+                            description: data.params.description,
+                            photo: data.params.photo_url,
                             invoice: {
-                                currency: 'STAR',
-                                amount: data.invoice.amount
+                                currency: data.params.currency,
+                                amount: data.params.amount,
+                                payload: data.params.payload
                             }
                         };
 
-                        // Отправляем форму оплаты Stars
-                        await ctx.telegram.callApi('payments.sendStarsForm', {
-                            form: starsForm
+                        // Отправляем форму оплаты
+                        await ctx.telegram.callApi('payments.createStarsPayment', {
+                            form: paymentForm
                         });
                     }
                 }
 
                 // Проверяем успешную оплату Stars
                 if (message.stars_transaction) {
-                    const transaction = message.stars_transaction as StarsTransaction;
                     const userId = ctx.from.id;
+                    await this.db.updateUserPaid(userId, true);
+                    await this.db.addInfToUser(userId, 1);
 
-                    if (transaction.amount === 1 && transaction.currency === 'STAR') {
-                        await this.db.updateUserPaid(userId, true);
-                        await this.db.addInfToUser(userId, 1);
+                    await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Вам начислен 1 INF.');
 
-                        await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Вам начислен 1 INF.');
-
-                        await ctx.reply('Нажмите кнопку ниже, чтобы начать играть:', {
-                            reply_markup: {
-                                inline_keyboard: [[
-                                    {
-                                        text: '🎮 Играть',
-                                        web_app: {
-                                            url: `https://maggpro.github.io/inf/?v=${Date.now()}`
-                                        }
+                    await ctx.reply('Нажмите кнопку ниже, чтобы начать играть:', {
+                        reply_markup: {
+                            inline_keyboard: [[
+                                {
+                                    text: '🎮 Играть',
+                                    web_app: {
+                                        url: `https://maggpro.github.io/inf/?v=${Date.now()}`
                                     }
-                                ]]
-                            }
-                        });
-                    }
+                                }
+                            ]]
+                        }
+                    });
                 }
             } catch (error) {
                 console.error('Error handling stars payment:', error);
@@ -242,7 +253,7 @@ export class Bot {
                 });
                 await this.payments.handleInitialPayment(userId);
             } else {
-                console.log(`Существ��ющий пользователь ${username} вернулся`);
+                console.log(`Существующий пользователь ${username} вернулся`);
                 await ctx.reply(`С возвращением! Ваш баланс: ${user.inf_balance} INF`, {
                     reply_markup: {
                         inline_keyboard: [[

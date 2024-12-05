@@ -110,6 +110,7 @@ body {
     display: grid;
     gap: 15px;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    padding: 15px;
 }
 
 .shop-item {
@@ -117,6 +118,9 @@ body {
     padding: 20px;
     border-radius: 12px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .shop-item h3 {
@@ -126,15 +130,24 @@ body {
 .discount {
     color: #4CAF50;
     font-weight: bold;
+    margin: 8px 0;
 }
 
 .buy-button {
     background: var(--tg-theme-button-color);
     color: var(--tg-theme-button-text-color);
     border: none;
-    padding: 10px 20px;
+    padding: 12px 20px;
     border-radius: 8px;
     cursor: pointer;
+    font-size: 16px;
+    margin-top: 15px;
+    transition: opacity 0.3s;
+}
+
+.buy-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Leaderboard */
@@ -197,7 +210,7 @@ body {
     text-align: center;
 }
 
-/* Отступ для контента, чтобы не перекрывался нижней навигацией */
+/* Отступ для контента, чтобы не перекрывался нижней навигац��ей */
 #content {
     padding-bottom: 70px;
 }

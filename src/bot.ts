@@ -99,22 +99,6 @@ export class Bot {
             try {
                 const message = ctx.message;
 
-                if (message?.web_app_data?.data) {
-                    const data = JSON.parse(message.web_app_data.data);
-
-                    if (data.method === 'send_star') {
-                        // Отправляем кнопку для отправки Star
-                        await ctx.reply('Для начала игры отправьте Star:', {
-                            reply_markup: {
-                                inline_keyboard: [[{
-                                    text: '💫 Отправить 1 Star',
-                                    url: `tg://stars/send?amount=${data.amount}&message=${encodeURIComponent(data.message)}`
-                                }]]
-                            }
-                        });
-                    }
-                }
-
                 // Проверяем получение Stars
                 if (message.via_bot?.is_bot && message.forward_date) {
                     const userId = ctx.from.id;
@@ -221,7 +205,7 @@ export class Bot {
                 });
                 await this.payments.handleInitialPayment(userId);
             } else {
-                console.log(`Существующий пользователь ${username} вернулся`);
+                console.log(`Сущес��вующий пользователь ${username} вернулся`);
                 await ctx.reply(`С возвращением! Ваш баланс: ${user.inf_balance} INF`, {
                     reply_markup: {
                         inline_keyboard: [[

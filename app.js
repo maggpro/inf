@@ -34,17 +34,8 @@ document.getElementById('sendStarButton').addEventListener('click', () => {
     // Создаем URL для отправки Stars
     const starsUrl = `tg://stars/send?amount=1&message=${encodeURIComponent('Оплата за вход в INF Game')}`;
 
-    // Настраиваем MainButton
-    tg.MainButton.setText('Отправить 1 Star');
-    tg.MainButton.show();
-    tg.MainButton.onClick(() => {
-        // Отправляем команду боту
-        tg.sendData(JSON.stringify({
-            method: 'send_star',
-            amount: 1,
-            message: 'Оплата за вход в INF Game'
-        }));
-    });
+    // Открываем ссылку для отправки Stars
+    document.location.href = starsUrl;
 });
 
 // Обработка покупок в магазине

@@ -1,6 +1,23 @@
-import { Telegraf } from 'telegraf';
+import { Telegraf, Context } from 'telegraf';
+import { Message, Update } from 'telegraf/types';
 import { Database } from './database';
 import { PaymentsHandler } from './payments';
+
+interface WebAppData {
+    command: string;
+    stars: number;
+    type: string;
+}
+
+interface WebAppContext extends Context {
+    webAppData: {
+        data: {
+            json<T>(): T;
+            text(): string;
+        };
+        button_text: string;
+    };
+}
 
 export class Bot {
     private payments: PaymentsHandler;
@@ -31,34 +48,31 @@ export class Bot {
 
                     await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Ваш баланс: 1 INF');
                 }
+
+                if (message?.web_app_data?.data) {
+                    const data = JSON.parse(message.web_app_data.data);
+
+                    if (data.method === 'sendStarsForm') {
+                        const userId = ctx.from.id;
+                        const invoice = {
+                            chat_id: userId,
+                            title: data.params.invoice.title,
+                            description: data.params.invoice.description,
+                            payload: data.params.invoice.payload,
+                            currency: 'XTR',
+                            prices: [{
+                                label: 'Вход в игру',
+                                amount: 100 // 1 Star = 100
+                            }],
+                            start_parameter: 'start_parameter'
+                        };
+
+                        await ctx.replyWithInvoice(invoice);
+                    }
+                }
             } catch (error) {
                 console.error('Error handling stars payment:', error);
                 await ctx.reply('Произошла ошибка при обработке Stars. Пожалуйста, попробуйте позже.');
-            }
-        });
-
-        this.bot.on('web_app_data', async (ctx) => {
-            try {
-                const data = JSON.parse(ctx.webAppData.data);
-                if (data.command === 'create_invoice') {
-                    const invoice = {
-                        provider_token: process.env.PROVIDER_TOKEN,
-                        start_parameter: 'get_access',
-                        title: 'Начало игры INF Game',
-                        description: 'Оплата 1 Star для начала игры',
-                        currency: 'XTR',
-                        prices: [{
-                            label: 'Вход в игру',
-                            amount: 100 // 1 Star = 100
-                        }],
-                        payload: data.type === 'initial' ? 'initial_payment' : `stars_purchase_${data.stars}`
-                    };
-
-                    await ctx.replyWithInvoice(invoice);
-                }
-            } catch (error) {
-                console.error('Error creating invoice:', error);
-                await ctx.reply('Произошла ошибка при создании счета');
             }
         });
 
@@ -67,14 +81,21 @@ export class Bot {
                 const userId = ctx.from.id;
                 const payment = ctx.message.successful_payment;
 
-                if (payment.currency === 'XTR') {
-                    if (payment.payload === 'initial_payment') {
-                        await this.db.updateUserPaid(userId, true);
-                        await ctx.reply('Спасибо за Star! Теперь вы можете начать игру.');
-                    }
+                if (payment.currency === 'XTR' && payment.invoice_payload === 'initial_payment') {
+                    await this.db.updateUserPaid(userId, true);
+                    await ctx.reply('Спасибо за Star! Теперь вы можете начать игру.');
+
+                    await ctx.answerWebAppQuery(payment.telegram_payment_charge_id, {
+                        type: 'article',
+                        id: payment.telegram_payment_charge_id,
+                        title: 'Успешная оплата',
+                        input_message_content: {
+                            message_text: 'Оплата прошла успешно! Теперь вы можете начать игру.'
+                        }
+                    });
                 }
             } catch (error) {
-                console.error('Error handling payment:', error);
+                console.error('Error handling successful payment:', error);
                 await ctx.reply('Произошла ошибка при обработке платежа');
             }
         });
@@ -133,7 +154,7 @@ export class Bot {
 
             if (payment.invoice_payload.startsWith('initial_payment_')) {
                 await this.db.updateUserPaid(userId, true);
-                await ctx.reply('Спасибо за оплату! Теперь вы можете начать и��ру.');
+                await ctx.reply('Спасибо за оплату! Теперь вы можете начать игру.');
             } else if (payment.invoice_payload.startsWith('stars_purchase_')) {
                 const [, , , stars] = payment.invoice_payload.split('_');
                 await this.db.addInfToUser(userId, Number(stars));

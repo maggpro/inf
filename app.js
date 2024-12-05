@@ -36,19 +36,28 @@ document.getElementById('sendStarButton').addEventListener('click', () => {
         message: 'Для начала игры необходимо отправить 1 Star. Продолжить?',
         buttons: [{
             type: 'default',
-            text: 'Отправить Star',
-            id: 'send_initial_star'
+            text: 'Продолжить',
+            id: 'send_star'
         }, {
             type: 'cancel',
             text: 'Отмена'
         }]
     }, (buttonId) => {
-        if (buttonId === 'send_initial_star') {
-            // Отправляем команду боту для создания счета на 1 Star
+        if (buttonId === 'send_star') {
+            // Используем специальный формат для Stars
             tg.sendData(JSON.stringify({
-                command: 'create_invoice',
-                stars: 1,
-                type: 'initial'
+                method: 'sendStarsForm',
+                params: {
+                    form_id: Date.now(),
+                    invoice: {
+                        currency: 'XTR',
+                        amount: 100, // 1 Star = 100 единиц
+                        description: 'Начало игры INF Game',
+                        title: 'Вход в игру',
+                        photo_url: null,
+                        payload: 'initial_payment'
+                    }
+                }
             }));
         }
     });

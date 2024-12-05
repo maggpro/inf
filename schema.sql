@@ -7,7 +7,8 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     user_id BIGINT PRIMARY KEY,
     username VARCHAR(255),
-    inf_balance DECIMAL(20,2) DEFAULT 0,
+    stars_balance INT DEFAULT 0,      -- Баланс Stars
+    inf_balance DECIMAL(20,2) DEFAULT 0,  -- Баланс INF
     referral_code VARCHAR(255) UNIQUE,
     referred_by BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -20,7 +21,6 @@ CREATE TABLE star_transactions (
     id SERIAL PRIMARY KEY,
     user_id BIGINT,
     stars_amount INT,
-    inf_amount DECIMAL(20,2),
     transaction_id VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
@@ -30,7 +30,8 @@ CREATE TABLE star_transactions (
 CREATE TABLE clicks (
     id SERIAL PRIMARY KEY,
     user_id BIGINT,
-    inf_earned DECIMAL(20,2),
+    stars_earned INT,              -- Заработано Stars
+    inf_earned DECIMAL(20,2),      -- Конвертировано в INF
     clicked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
@@ -42,8 +43,8 @@ CREATE INDEX idx_transactions_user_id ON star_transactions(user_id);
 CREATE INDEX idx_clicks_user_id ON clicks(user_id);
 
 -- Добавляем тестовых пользователей
-INSERT INTO users (user_id, username, inf_balance, referral_code, has_paid)
+INSERT INTO users (user_id, username, stars_balance, inf_balance, referral_code, has_paid)
 VALUES
-    (1273875265, 'ceotonex', 1000, 'CEX123', true),
-    (123456789, 'testuser1', 500, 'TEST01', true),
-    (987654321, 'testuser2', 750, 'TEST02', true);
+    (1273875265, 'ceotonex', 100, 1000, 'CEX123', true),
+    (123456789, 'testuser1', 50, 500, 'TEST01', true),
+    (987654321, 'testuser2', 75, 750, 'TEST02', true);

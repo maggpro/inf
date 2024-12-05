@@ -9,37 +9,79 @@
 </head>
 <body>
     <div id="app">
-        <div class="game-container">
-            <div class="balance">
-                <h2>Ваш баланс</h2>
-                <h1><span id="balance">0</span> INF</h1>
+        <!-- Навигация -->
+        <div class="tabs">
+            <button class="tab-button active" data-tab="game">Игра</button>
+            <button class="tab-button" data-tab="shop">Магазин</button>
+            <button class="tab-button" data-tab="rating">Рейтинг</button>
+        </div>
+
+        <!-- Вкладка Игра -->
+        <div class="tab-content active" id="game">
+            <div class="balance-block">
+                <div class="balance-item">
+                    <h3>Stars</h3>
+                    <p><span id="starsBalance">0</span> ⭐️</p>
+                </div>
+                <div class="balance-item">
+                    <h3>INF</h3>
+                    <p><span id="infBalance">0</span> 💎</p>
+                </div>
             </div>
 
-            <button id="clickButton" class="click-button">
-                Click for INF
-                <span id="timer" class="timer"></span>
-            </button>
+            <div class="click-block">
+                <button id="clickButton" class="click-button">
+                    Нажми для Stars
+                    <span id="timer" class="timer"></span>
+                </button>
+                <p class="click-info">Получите <span class="stars-per-click">1</span> Stars за клик</p>
+            </div>
 
-            <div class="stats">
+            <div class="stats-block">
                 <h3>Статистика</h3>
                 <p>Реферальный код: <span id="referralCode">-</span></p>
-                <p>Аккаунт создан: <span id="createdAt">-</span></p>
+                <p>Stars за все время: <span id="totalStars">0</span></p>
+                <p>INF за все время: <span id="totalInf">0</span></p>
             </div>
         </div>
 
-        <div class="leaderboard">
-            <h2>Топ игроков</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Место</th>
-                        <th>Имя</th>
-                        <th>INF</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboardBody">
-                </tbody>
-            </table>
+        <!-- Вкладка Магазин -->
+        <div class="tab-content" id="shop">
+            <div class="shop-items">
+                <div class="shop-item">
+                    <h3>50 Stars ➝ 50 INF</h3>
+                    <p class="discount">Бонус: 0%</p>
+                    <button class="buy-button" data-package="1">Купить</button>
+                </div>
+                <div class="shop-item">
+                    <h3>100 Stars ➝ 105 INF</h3>
+                    <p class="discount">Бонус: 5%</p>
+                    <button class="buy-button" data-package="2">Купить</button>
+                </div>
+                <div class="shop-item">
+                    <h3>500 Stars ➝ 575 INF</h3>
+                    <p class="discount">Бонус: 15%</p>
+                    <button class="buy-button" data-package="3">Купить</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Рейтинг -->
+        <div class="tab-content" id="rating">
+            <div class="leaderboard">
+                <h2>Топ по INF</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Место</th>
+                            <th>Имя</th>
+                            <th>INF</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     <script src="app.js"></script>

@@ -55,8 +55,8 @@ export class Bot {
             try {
                 const message = ctx.message;
 
-                // Проверяем, что это пересланное сообщение от @donate
-                if (message.forward_from?.username === 'donate' && message.forward_date) {
+                // Проверяем получение Stars
+                if (message.via_bot?.is_bot && message.forward_date) {
                     const userId = ctx.from.id;
 
                     // Активируем аккаунт и начисляем INF
@@ -80,45 +80,9 @@ export class Bot {
                         }
                     });
                 }
-
-                // Обработка других сообщений от веб-приложения
-                if (message?.web_app_data?.data) {
-                    const data = JSON.parse(message.web_app_data.data);
-
-                    if (data.method === 'starPaymentStarted') {
-                        // Создаем платежную форму для Stars
-                        const paymentForm: PaymentForm = {
-                            form_id: Date.now().toString(),
-                            bot_id: ctx.botInfo.id,
-                            title: "Вход в INF Game",
-                            description: "Оплата 1 Star для начала игры",
-                            invoice: {
-                                currency: "XTR",
-                                amount: 100, // 1 Star = 100
-                                native_currency: "STAR",
-                                native_amount: 1
-                            },
-                            provider_id: Number(process.env.PROVIDER_ID), // ID провайдера Stars
-                            url: "https://t.me/donate" // URL для оплаты Stars
-                        };
-
-                        // Отправляем форму оплаты
-                        await ctx.reply('Для начала игры отправьте Star:', {
-                            reply_markup: {
-                                inline_keyboard: [[{
-                                    text: '💫 Отправить 1 Star',
-                                    callback_data: 'pay_stars'
-                                }]]
-                            }
-                        });
-
-                        // Сохраняем форму в контексте для последующей обработки
-                        ctx.session.paymentForm = paymentForm;
-                    }
-                }
             } catch (error) {
-                console.error('Error handling message:', error);
-                await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
+                console.error('Error handling stars:', error);
+                await ctx.reply('Произошла ошибка при обработке Stars. Пожалуйста, попробуйте позже.');
             }
         });
 
@@ -231,7 +195,7 @@ export class Bot {
 
             if (payment.invoice_payload.startsWith('initial_payment_')) {
                 await this.db.updateUserPaid(userId, true);
-                await ctx.reply('Спасибо за оплату! Теперь вы можете наать игру.');
+                await ctx.reply('Спасибо за оплату! Теперь ы можете наать игру.');
             } else if (payment.invoice_payload.startsWith('stars_purchase_')) {
                 const [, , , stars] = payment.invoice_payload.split('_');
                 await this.db.addInfToUser(userId, Number(stars));

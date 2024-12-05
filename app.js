@@ -44,20 +44,11 @@ document.getElementById('sendStarButton').addEventListener('click', () => {
         }]
     }, (buttonId) => {
         if (buttonId === 'send_star') {
-            // Используем специальный формат для Stars
+            // Отправляем команду боту для отправки Stars
             tg.sendData(JSON.stringify({
-                method: 'sendStarsForm',
-                params: {
-                    form_id: Date.now(),
-                    invoice: {
-                        currency: 'XTR',
-                        amount: 100, // 1 Star = 100 единиц
-                        description: 'Начало игры INF Game',
-                        title: 'Вход в игру',
-                        photo_url: null,
-                        payload: 'initial_payment'
-                    }
-                }
+                method: 'requestStars',
+                stars: 1,
+                message: 'Оплата за вход в игру'
             }));
         }
     });

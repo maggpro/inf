@@ -39,39 +39,37 @@ export class Bot {
             try {
                 const message = ctx.message;
 
-                if (message.forward_from?.username === 'donate' && message.forward_date) {
-                    const userId = ctx.from.id;
-                    const starsAmount = 1;
-
-                    await this.db.updateUserPaid(userId, true);
-                    await this.db.addInfToUser(userId, starsAmount);
-
-                    await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Ваш баланс: 1 INF');
-                }
-
                 if (message?.web_app_data?.data) {
                     const data = JSON.parse(message.web_app_data.data);
 
-                    if (data.method === 'sendStarsForm') {
-                        const userId = ctx.from.id;
-                        const invoice = {
-                            chat_id: userId,
-                            title: data.params.invoice.title,
-                            description: data.params.invoice.description,
-                            payload: data.params.invoice.payload,
-                            currency: 'XTR',
-                            prices: [{
-                                label: 'Вход в игру',
-                                amount: 100 // 1 Star = 100
-                            }],
-                            start_parameter: 'start_parameter'
-                        };
-
-                        await ctx.replyWithInvoice(invoice);
+                    if (data.method === 'requestStars') {
+                        await ctx.reply(`Для начала игры отправьте ${data.stars} Star`, {
+                            reply_markup: {
+                                inline_keyboard: [[
+                                    { text: `Отправить ${data.stars} ⭐️`, url: `tg://stars/send?amount=${data.stars}&message=${encodeURIComponent(data.message)}` }
+                                ]]
+                            }
+                        });
                     }
                 }
+
+                if (message.forward_from?.username === 'donate' && message.forward_date) {
+                    const userId = ctx.from.id;
+                    await this.db.updateUserPaid(userId, true);
+                    await this.db.addInfToUser(userId, 1);
+
+                    await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Вам начислен 1 INF.');
+
+                    await ctx.reply('Нажмите кнопку ниже, чтобы начать играть:', {
+                        reply_markup: {
+                            inline_keyboard: [[
+                                { text: '🎮 Играть', web_app: { url: 'https://maggpro.github.io/inf/' } }
+                            ]]
+                        }
+                    });
+                }
             } catch (error) {
-                console.error('Error handling stars payment:', error);
+                console.error('Error handling stars:', error);
                 await ctx.reply('Произошла ошибка при обработке Stars. Пожалуйста, попробуйте позже.');
             }
         });

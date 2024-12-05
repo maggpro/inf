@@ -173,7 +173,7 @@ export class Bot {
                     });
                 }
             } catch (error) {
-                console.error('Error handling stars payment:', error);
+                console.error('Error handling stars:', error);
                 await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
             }
         });

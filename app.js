@@ -31,18 +31,35 @@ async function checkPayment() {
 
 // Обработчик кнопки отправки Star
 document.getElementById('sendStarButton').addEventListener('click', () => {
-    // Отправляем команду для создания формы оплаты Stars
-    tg.sendData(JSON.stringify({
-        method: 'createStarsPayment',
-        params: {
-            title: 'Вход в INF Game',
-            description: 'Оплата 1 Star для начала игры',
-            photo_url: null,
-            payload: 'initial_payment',
-            amount: 1,
-            currency: 'STAR'
+    tg.showPopup({
+        title: 'Отправка Star',
+        message: 'Для начала игры необходимо отправить 1 Star. Продолжить?',
+        buttons: [{
+            type: 'default',
+            text: 'Отправить Star',
+            id: 'send_star'
+        }, {
+            type: 'cancel',
+            text: 'Отмена'
+        }]
+    }, (buttonId) => {
+        if (buttonId === 'send_star') {
+            // Создаем URL для отправки Stars
+            const starsUrl = `tg://stars/send?amount=1&message=${encodeURIComponent('Оплата за вход в INF Game')}`;
+
+            // Открываем окно отправки Stars
+            window.location.href = starsUrl;
+
+            // Уведомляем пользователя
+            tg.showPopup({
+                title: 'Отправка Star',
+                message: 'После отправки Star игра автоматически станет доступна',
+                buttons: [{
+                    type: 'close'
+                }]
+            });
         }
-    }));
+    });
 });
 
 // Обработка покупок в магазине
@@ -99,7 +116,7 @@ async function loadUserData() {
         document.getElementById('totalStars').textContent = user.total_stars || '0';
         document.getElementById('totalInf').textContent = user.total_inf || '0';
 
-        // Проверяем возможность покупки для к��ждой кнпки
+        // Проверяем возможность покупки для кждой кнпки
         document.querySelectorAll('.buy-button').forEach(button => {
             const requiredStars = parseInt(button.dataset.stars);
             button.disabled = user.stars_balance < requiredStars;

@@ -36,6 +36,48 @@ export class Bot {
                 await ctx.reply('Произошла ошибка при обработке Stars. Пожалуйста, попробуйте позже.');
             }
         });
+
+        this.bot.on('web_app_data', async (ctx) => {
+            try {
+                const data = JSON.parse(ctx.webAppData.data);
+                if (data.command === 'create_invoice') {
+                    const invoice = {
+                        provider_token: process.env.PROVIDER_TOKEN,
+                        start_parameter: 'get_access',
+                        title: 'Начало игры INF Game',
+                        description: 'Оплата 1 Star для начала игры',
+                        currency: 'XTR',
+                        prices: [{
+                            label: 'Вход в игру',
+                            amount: 100 // 1 Star = 100
+                        }],
+                        payload: data.type === 'initial' ? 'initial_payment' : `stars_purchase_${data.stars}`
+                    };
+
+                    await ctx.replyWithInvoice(invoice);
+                }
+            } catch (error) {
+                console.error('Error creating invoice:', error);
+                await ctx.reply('Произошла ошибка при создании счета');
+            }
+        });
+
+        this.bot.on('successful_payment', async (ctx) => {
+            try {
+                const userId = ctx.from.id;
+                const payment = ctx.message.successful_payment;
+
+                if (payment.currency === 'XTR') {
+                    if (payment.payload === 'initial_payment') {
+                        await this.db.updateUserPaid(userId, true);
+                        await ctx.reply('Спасибо за Star! Теперь вы можете начать игру.');
+                    }
+                }
+            } catch (error) {
+                console.error('Error handling payment:', error);
+                await ctx.reply('Произошла ошибка при обработке платежа');
+            }
+        });
     }
 
     private async handleStart(ctx: any) {
@@ -91,7 +133,7 @@ export class Bot {
 
             if (payment.invoice_payload.startsWith('initial_payment_')) {
                 await this.db.updateUserPaid(userId, true);
-                await ctx.reply('Спасибо за оплату! Теперь вы можете начать игру.');
+                await ctx.reply('Спасибо за оплату! Теперь вы можете начать и��ру.');
             } else if (payment.invoice_payload.startsWith('stars_purchase_')) {
                 const [, , , stars] = payment.invoice_payload.split('_');
                 await this.db.addInfToUser(userId, Number(stars));

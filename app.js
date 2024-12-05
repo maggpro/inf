@@ -44,22 +44,11 @@ document.getElementById('sendStarButton').addEventListener('click', () => {
         }]
     }, (buttonId) => {
         if (buttonId === 'send_initial_star') {
-            // Создаем invoice для оплаты 1 Star
-            const invoice = {
-                title: "Начало игры INF Game",
-                description: "Оплата 1 Star для начала игры",
-                currency: "XTR",
-                prices: [{
-                    label: "Вход в игру",
-                    amount: 100 // 1 Star = 100 (минимальная сумма)
-                }],
-                payload: "initial_payment"
-            };
-
-            // Отправляем запрос на создание счета
+            // Отправляем команду боту для создания счета на 1 Star
             tg.sendData(JSON.stringify({
-                type: "invoice",
-                ...invoice
+                command: 'create_invoice',
+                stars: 1,
+                type: 'initial'
             }));
         }
     });

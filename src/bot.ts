@@ -63,7 +63,12 @@ export class Bot {
                     await ctx.reply('Нажмите кнопку ниже, чтобы начать играть:', {
                         reply_markup: {
                             inline_keyboard: [[
-                                { text: '🎮 Играть', web_app: { url: 'https://maggpro.github.io/inf/' } }
+                                {
+                                    text: '🎮 Играть',
+                                    web_app: {
+                                        url: `https://maggpro.github.io/inf/?v=${Date.now()}`
+                                    }
+                                }
                             ]]
                         }
                     });
@@ -88,7 +93,12 @@ export class Bot {
                     await ctx.reply('Нажмите кнопку ниже, чтобы начать играть:', {
                         reply_markup: {
                             inline_keyboard: [[
-                                { text: '🎮 Играть', web_app: { url: 'https://maggpro.github.io/inf/' } }
+                                {
+                                    text: '🎮 Играть',
+                                    web_app: {
+                                        url: `https://maggpro.github.io/inf/?v=${Date.now()}`
+                                    }
+                                }
                             ]]
                         }
                     });

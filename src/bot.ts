@@ -116,8 +116,25 @@ export class Bot {
             try {
                 const message = ctx.message;
 
-                // Проверяем получение Stars через пересланное сообщение
-                if (message.forward_from?.username === 'donate' && message.forward_date) {
+                // Обработка команды от веб-приложения
+                if (message?.web_app_data?.data) {
+                    const data = JSON.parse(message.web_app_data.data);
+
+                    if (data.method === 'stars_payment') {
+                        // Создаем платеж через Stars API
+                        await ctx.telegram.sendMessage(ctx.from.id, 'Оплата Stars...', {
+                            reply_markup: {
+                                inline_keyboard: [[{
+                                    text: `Отправить ${data.amount} Star`,
+                                    pay: true
+                                }]]
+                            }
+                        });
+                    }
+                }
+
+                // Проверяем успешную оплату Stars
+                if (message.successful_payment) {
                     const userId = ctx.from.id;
                     await this.db.updateUserPaid(userId, true);
                     await this.db.addInfToUser(userId, 1);
@@ -137,24 +154,8 @@ export class Bot {
                         }
                     });
                 }
-
-                // Проверяем получение Stars через web_app_data
-                if (message?.web_app_data?.data) {
-                    const data = JSON.parse(message.web_app_data.data);
-
-                    if (data.method === 'send_stars_command') {
-                        await ctx.reply('Для начала игры отправьте 1 Star:', {
-                            reply_markup: {
-                                inline_keyboard: [[{
-                                    text: '💫 Отправить 1 Star',
-                                    url: 'tg://stars/send?amount=1'
-                                }]]
-                            }
-                        });
-                    }
-                }
             } catch (error) {
-                console.error('Error handling message:', error);
+                console.error('Error handling stars payment:', error);
                 await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
             }
         });

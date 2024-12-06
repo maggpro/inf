@@ -31,11 +31,30 @@ async function checkPayment() {
 
 // Обработчик кнопки отправки Star
 document.getElementById('sendStarButton').addEventListener('click', () => {
-    // Отправляем команду боту
-    tg.sendData(JSON.stringify({
-        method: 'send_stars_command',
-        command: '/send_stars'
-    }));
+    // Показываем подтверждение
+    tg.showPopup({
+        title: 'Отправка Star',
+        message: 'Отправить 1 Star для начала игры?',
+        buttons: [
+            {
+                type: 'default',
+                text: 'Отправить',
+                id: 'send_star'
+            },
+            {
+                type: 'cancel',
+                text: 'Отмена'
+            }
+        ]
+    }, (buttonId) => {
+        if (buttonId === 'send_star') {
+            // Отправляем команду на создание платежа
+            tg.sendData(JSON.stringify({
+                method: 'stars_payment',
+                amount: 1
+            }));
+        }
+    });
 });
 
 // Обработка покупок в магазине

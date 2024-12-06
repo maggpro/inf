@@ -31,10 +31,10 @@ async function checkPayment() {
 
 // Обработчик кнопки отправки Star
 document.getElementById('sendStarButton').addEventListener('click', () => {
-    // Отправляем команду боту для показа кнопки отправки Stars
+    // Отправляем команду боту
     tg.sendData(JSON.stringify({
-        method: 'request_star_payment',
-        amount: 1
+        method: 'send_stars_command',
+        command: '/send_stars'
     }));
 });
 

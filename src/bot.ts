@@ -95,29 +95,29 @@ export class Bot {
         this.bot.on('pre_checkout_query', (ctx) => ctx.answerPreCheckoutQuery(true));
         this.bot.on('successful_payment', this.handleSuccessfulPayment.bind(this));
 
+        this.bot.command('send_stars', async (ctx) => {
+            try {
+                // Отправляем кнопку для отправки Stars
+                await ctx.reply('Для начала игры отправьте 1 Star:', {
+                    reply_markup: {
+                        inline_keyboard: [[{
+                            text: '💫 Отправить 1 Star',
+                            url: 'tg://stars/send?amount=1'
+                        }]]
+                    }
+                });
+            } catch (error) {
+                console.error('Error sending stars command:', error);
+                await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
+            }
+        });
+
         this.bot.on('message', async (ctx: any) => {
             try {
                 const message = ctx.message;
 
-                // Обработка команды от веб-приложения
-                if (message?.web_app_data?.data) {
-                    const data = JSON.parse(message.web_app_data.data);
-
-                    if (data.method === 'request_star_payment') {
-                        // Отправляем кнопку для отправки Stars
-                        await ctx.reply('Для начала игры отправьте Star:', {
-                            reply_markup: {
-                                inline_keyboard: [[{
-                                    text: '💫 Отправить 1 Star',
-                                    callback_data: 'send_star'
-                                }]]
-                            }
-                        });
-                    }
-                }
-
-                // Проверяем получение Stars
-                if (message.via_bot?.is_bot && message.forward_date) {
+                // Проверяем получение Stars через пересланное сообщение
+                if (message.forward_from?.username === 'donate' && message.forward_date) {
                     const userId = ctx.from.id;
                     await this.db.updateUserPaid(userId, true);
                     await this.db.addInfToUser(userId, 1);
@@ -137,59 +137,25 @@ export class Bot {
                         }
                     });
                 }
-            } catch (error) {
-                console.error('Error handling stars:', error);
-                await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
-            }
-        });
 
-        // Обработчик нажатия на кнопку отправки Star
-        this.bot.action('send_star', async (ctx) => {
-            try {
-                await ctx.answerCbQuery();
+                // Проверяем получение Stars через web_app_data
+                if (message?.web_app_data?.data) {
+                    const data = JSON.parse(message.web_app_data.data);
 
-                // Отправляем ссылку для отправки Star
-                await ctx.reply('Нажмите на кнопку ниже для отправки Star:', {
-                    reply_markup: {
-                        inline_keyboard: [[{
-                            text: '💫 Отправить 1 Star',
-                            url: `tg://stars/send?amount=1&message=${encodeURIComponent('Оплата за вход в INF Game')}`
-                        }]]
+                    if (data.method === 'send_stars_command') {
+                        await ctx.reply('Для начала игры отправьте 1 Star:', {
+                            reply_markup: {
+                                inline_keyboard: [[{
+                                    text: '💫 Отправить 1 Star',
+                                    url: 'tg://stars/send?amount=1'
+                                }]]
+                            }
+                        });
                     }
-                });
-            } catch (error) {
-                console.error('Error sending star link:', error);
-                await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
-            }
-        });
-
-        this.bot.on('successful_payment', async (ctx) => {
-            try {
-                const userId = ctx.from.id;
-                const payment = ctx.message.successful_payment;
-
-                if (payment.currency === 'XTR' && payment.invoice_payload === 'initial_payment') {
-                    await this.db.updateUserPaid(userId, true);
-                    await this.db.addInfToUser(userId, 1);
-
-                    await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Вам начислен 1 INF.');
-
-                    await ctx.reply('Нажмите кнопку ниже, чтобы начать играть:', {
-                        reply_markup: {
-                            inline_keyboard: [[
-                                {
-                                    text: '🎮 Играть',
-                                    web_app: {
-                                        url: `https://maggpro.github.io/inf/?v=${Date.now()}`
-                                    }
-                                }
-                            ]]
-                        }
-                    });
                 }
             } catch (error) {
-                console.error('Error handling successful payment:', error);
-                await ctx.reply('Произошла ошибка при обработке платежа');
+                console.error('Error handling message:', error);
+                await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
             }
         });
 

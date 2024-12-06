@@ -34,8 +34,8 @@ document.getElementById('sendStarButton').addEventListener('click', () => {
     // Создаем URL для отправки Stars
     const starsUrl = `tg://stars/send?amount=1&message=${encodeURIComponent('Оплата за вход в INF Game')}`;
 
-    // Открываем ссылку для отправки Stars
-    document.location.href = starsUrl;
+    // Используем Telegram WebApp API для открытия ссылки
+    tg.openLink(starsUrl);
 });
 
 // Обработка покупок в магазине

@@ -196,16 +196,25 @@ export class Bot {
             if (!user) {
                 console.log(`Создаем нового пользователя ${username}`);
                 user = await this.db.createUser(userId, username);
+
+                // Отправляем кнопку для отправки Star
                 await ctx.reply('Добро пожаловать в INF Game! Для начала игры необходимо отправить 1 Star.', {
                     reply_markup: {
                         inline_keyboard: [[
-                            { text: '🎮 Играть', web_app: { url: 'https://maggpro.github.io/inf/' } }
+                            {
+                                text: '💫 Отправить 1 Star',
+                                url: `tg://stars/send?amount=1&message=${encodeURIComponent('Оплата за вход в INF Game')}`
+                            }
+                        ], [
+                            {
+                                text: '🎮 Играть',
+                                web_app: { url: 'https://maggpro.github.io/inf/' }
+                            }
                         ]]
                     }
                 });
-                await this.payments.handleInitialPayment(userId);
             } else {
-                console.log(`Сущес��вующий пользователь ${username} вернулся`);
+                console.log(`Сущесвующий пользователь ${username} вернулся`);
                 await ctx.reply(`С возвращением! Ваш баланс: ${user.inf_balance} INF`, {
                     reply_markup: {
                         inline_keyboard: [[

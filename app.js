@@ -31,11 +31,11 @@ async function checkPayment() {
 
 // Обработчик кнопки отправки Star
 document.getElementById('sendStarButton').addEventListener('click', () => {
-    // Создаем URL для отправки Stars
-    const starsUrl = `tg://stars/send?amount=1&message=${encodeURIComponent('Оплата за вход в INF Game')}`;
-
-    // Используем Telegram WebApp API для открытия ссылки
-    tg.openLink(starsUrl);
+    // Отправляем команду боту для показа кнопки отправки Stars
+    tg.sendData(JSON.stringify({
+        method: 'request_star_payment',
+        amount: 1
+    }));
 });
 
 // Обработка покупок в магазине

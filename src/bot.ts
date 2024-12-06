@@ -99,18 +99,31 @@ export class Bot {
             try {
                 const message = ctx.message;
 
+                // Обработка команды от веб-приложения
+                if (message?.web_app_data?.data) {
+                    const data = JSON.parse(message.web_app_data.data);
+
+                    if (data.method === 'request_star_payment') {
+                        // Отправляем кнопку для отправки Stars
+                        await ctx.reply('Для начала игры отправьте Star:', {
+                            reply_markup: {
+                                inline_keyboard: [[{
+                                    text: '💫 Отправить 1 Star',
+                                    callback_data: 'send_star'
+                                }]]
+                            }
+                        });
+                    }
+                }
+
                 // Проверяем получение Stars
                 if (message.via_bot?.is_bot && message.forward_date) {
                     const userId = ctx.from.id;
-
-                    // Активируем аккаунт и начисляем INF
                     await this.db.updateUserPaid(userId, true);
                     await this.db.addInfToUser(userId, 1);
 
-                    // Отправляем подтверждение
                     await ctx.reply('Спасибо за Star! Теперь вы можете начать игру. Вам начислен 1 INF.');
 
-                    // Отправляем кнопку для входа в игру
                     await ctx.reply('Нажмите кнопку ниже, чтобы начать играть:', {
                         reply_markup: {
                             inline_keyboard: [[
@@ -126,6 +139,26 @@ export class Bot {
                 }
             } catch (error) {
                 console.error('Error handling stars:', error);
+                await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
+            }
+        });
+
+        // Обработчик нажатия на кнопку отправки Star
+        this.bot.action('send_star', async (ctx) => {
+            try {
+                await ctx.answerCbQuery();
+
+                // Отправляем ссылку для отправки Star
+                await ctx.reply('Нажмите на кнопку ниже для отправки Star:', {
+                    reply_markup: {
+                        inline_keyboard: [[{
+                            text: '💫 Отправить 1 Star',
+                            url: `tg://stars/send?amount=1&message=${encodeURIComponent('Оплата за вход в INF Game')}`
+                        }]]
+                    }
+                });
+            } catch (error) {
+                console.error('Error sending star link:', error);
                 await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
             }
         });
